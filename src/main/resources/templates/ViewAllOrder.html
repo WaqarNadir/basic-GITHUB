@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:replace="template:: head"></div>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+	<div th:replace="template:: wrapper"></div>
+	<div class="content-wrapper">
+		<!-- Content Header (Page header) -->
+		<div class="content">
+			<div class="box box-danger">
+
+				<div class="box-header with-border text-center">
+					<h2 class="box-title">List of Order</h2>
+				</div>
+				<br />
+				<table class="table table-striped">
+					<tbody>
+						<th>
+						<td>No.</td>
+						<td>Order No</td>
+						<td>Party Name</td>
+						<td>Status</td>
+						<td>Estimated Delievery Date</td>
+						</th>
+
+						<tr th:each="order,iterStat : ${orderList}">
+						<td></td>
+							<td th:text="${iterStat.index}">...</td>
+							<td th:text="${order.order_ID}">...</td>
+							<td	th:text="${order.person.Fname+' ' +order.person.Lname}">...</td>
+							<td th:text="${order.orderStatus}">...</td>
+							<td th:text="${order.estimatedDate}">...</td>
+						</tr>
+
+					</tbody>
+
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div th:replace="template:: footer"></div>
+</body>
+</html>

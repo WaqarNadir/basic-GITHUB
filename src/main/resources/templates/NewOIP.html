@@ -1,0 +1,215 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:replace="template:: head"></div>
+
+<body class="hold-transition skin-blue sidebar-mini" onload="init()">
+	<script th:inline="javascript">
+		function init() {
+			$('#orderID').append(
+					$("<option></option>").attr("value", "999").text(
+							"Please Select"));
+			$('#orderID').val(999);
+		}
+
+		function getProductList() {
+			var orderID = $("#orderID").val();
+			//	send("/productList",orderID);
+
+			$.ajax({
+				url : "OIP/productList",
+				contentType : "application/json; charset=utf-8",
+				data : JSON.stringify(orderID),
+				type : "POST",
+				success : function(prodType) {
+					$('#product').empty();
+					$.each(prodType, function(key, value, dropDown) {
+
+						$('#product').append(
+								$("<option></option>").attr("value", key).text(
+										value));
+					});
+
+				},
+				error : function(xhr, status, error) {
+					alert("ERROR:" + xhr.responseText);
+					console.log("ERROR:" + xhr.responseText);
+				}
+			});
+
+		}
+
+		function getOperations() {
+			var Dept = $("#department").val();
+
+			//	send("/operationList",Dept);
+
+			$.ajax({
+				url : "OIP/operationList",
+				contentType : "application/json; charset=utf-8",
+				data : JSON.stringify(Dept),
+				type : "POST",
+				success : function(prodType) {
+					$('#departmentOP').empty();
+					$.each(prodType, function(key, value) {
+						var result = value.split(',');
+
+						$('#departmentOP').append(
+								$("<option></option>").attr("value", result[1])
+										.text(result[0]));
+					});
+
+				},
+				error : function(xhr, status, error) {
+					alert("ERROR:" + xhr.responseText);
+					console.log("ERROR:" + xhr.responseText);
+				}
+			});
+
+		}
+		function send(action, value) {
+
+			// 	$.ajax({
+			// 		url : action,
+			// 		 contentType: "application/json; charset=utf-8",
+			// 		data :JSON.stringify(value),
+			// 		type : "POST",
+			// 		success : function(prodType) {
+			// 	    	$.each(prodType, function(key, value,dropDown) {
+
+			// 	    	     $(dropDown)
+			// 	    	         .append($("<option></option>")
+			// 	    	                    .attr("value",key)
+			// 	    	                    .text(value)); 
+			// 	    	});
+
+			//         },
+			// 		error : function(xhr, status, error) {
+			// 			alert("ERROR:"+xhr.responseText);
+			// 			console.log("ERROR:"+xhr.responseText);
+			// 		}	
+			// 	});
+
+		}
+	</script>
+
+	<div th:replace="template:: wrapper"></div>
+	<div class="content-wrapper">
+		<!-- Content Header (Page header) -->
+		<div class="box box-danger">
+
+			<div class="box-header with-border text-center">
+				<h2 class="box-title">Operation In Progress</h2>
+			</div>
+			<br />
+
+			<div class="row">
+				<div class="col-md-offset-4 col-md-6">
+					<form class="form-horizontal" action="OIP/save" method="post"
+						>
+
+						<div class="row" id="Section1.row5">
+							<div class="col-md-1">
+								<label class="control-label col-sm-2" for="nam">Order
+									ID:</label>
+							</div>
+							<div class="col-md-offset-1 col-md-8">
+								<select th:name="orderID" th:id="orderID" class="form-control"
+									onchange="getProductList()">
+									<option th:each="order,RowNum : ${orderList}"
+										th:value="${order.Order_ID}" th:text="${order.order_ID}">Order ID</option>
+								</select>
+							</div>
+						</div>
+						<br />
+						<div class="row" id="Section1.row5">
+							<div class="col-md-1">
+								<label class="control-label col-sm-2" for="nam">Product
+									Name:</label>
+							</div>
+							<div class="col-md-offset-1 col-md-8">
+								<select th:name="product" th:id="product" class="form-control"
+									th:field="${OIP.orderDetail.remarks}">
+									<option value="0">Please Select</option>
+								</select>
+							</div>
+						</div>
+						<br />
+
+						<div class="row" id="Section1.row5">
+							<div class="col-md-1">
+								<label class="control-label col-sm-2" for="nam">Department:</label>
+							</div>
+							<div class="col-md-offset-1 col-md-8">
+								<select th:name="department" class="form-control"
+									th:id="department" onchange="getOperations()">
+									<option th:each="operation,RowNum : ${deptList}"
+										th:value="${operation.Dept_ID}" th:text="${operation.name}">operation</option>
+								</select>
+							</div>
+						</div>
+						<br />
+
+						<div class="row" id="Section1.row5">
+							<div class="col-md-1">
+								<label class="control-label col-sm-2" for="nam">DepartmentOperation
+									:</label>
+							</div>
+							<div class="col-md-offset-1 col-md-8">
+								<select th:name="departmentOP" class="form-control"
+									th:id="departmentOP" th:field="${OIP.DeptOD_ID.name}">
+									<option value="0">Please Select</option>
+								</select>
+							</div>
+						</div>
+						<br />
+						<div class="row" id="Section1.row5">
+							<div class="col-md-1">
+								<label class="control-label col-sm-2" for="nam">Status:</label>
+							</div>
+							<div class="col-md-offset-1 col-md-8">
+								<select class="form-control" id="Status" th:field ="${OIP.status}">
+									<option value="0">Please Select</option>
+									<option value="Active">Active</option>
+									<option value="Inactive">Inactive</option>
+								</select>
+
+							</div>
+						</div>
+						<br />
+
+
+						<div class="row" id="Section1.row1">
+							<div class="col-md-1">
+								<label class="control-label col-sm-2" for="Remark">Initial
+									Cloth:</label>
+							</div>
+							<div class="col-md-offset-1 col-md-8">
+								<input type="text" class="form-control" id="initial"
+									th:field="${OIP.initialCloth}" placeholder="Initial Cloth " />
+							</div>
+						</div>
+						<br />
+						<div class="col-md-offset-1">
+							<div class="col-sm-offset-2 col-sm-10"></div>
+						</div>
+						<div class="form-group">
+							<div class="col-sm-offset-2 col-sm-10">
+								<br />
+								<button type="submit" onclick="redirect()" class="btn btn-default col-md-offset-1">Submit</button>
+								<script>
+								function redirect(){
+									 window.location.href  ="/DailyProduction";
+								}</script>
+							</div>
+							
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div th:replace="template:: footer"></div>
+</body>
+</html>

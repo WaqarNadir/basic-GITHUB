@@ -1,0 +1,215 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:replace="template:: head"></div>
+
+<script th:inline="javascript">
+	function operationlist() {
+
+	}
+</script>
+
+<body class="hold-transition skin-blue sidebar-mini">
+
+	<div th:replace="template:: wrapper"></div>
+
+
+	<!-- Content Wrapper. Contains page content -->
+
+	<div class="content-wrapper ">
+		<!-- Content Header (Page header) -->
+		<section class="content">
+			<div class="box box-danger">
+				<div class="box-header with-border text-center">
+					<h2 class="box-title">Manufacturing Order</h2>
+				</div>
+				<hr />
+
+				<div class="row" id="Section1.row1">
+					<div class="col-md-1">&nbsp;</div>
+					<div class="col-md-1">
+						<label for="textfield7">Order ID:</label>
+					</div>
+					<div class="col-md-3 ">
+						<input type="text" class="form-control" placeholder="Order Number" />
+					</div>
+
+					<div class="col-md-1">
+						<label for="date">Date:</label>
+					</div>
+					<div class="col-md-4">
+						<input type="date" name="date" id="date" />
+					</div>
+				</div>
+
+				<div class="row">&nbsp;</div>
+				<div class="row" id="Section1.row2">
+					<div class="col-md-1">&nbsp;</div>
+					<div class="col-md-1">
+						<label for="textfield7">Party Name:</label>
+					</div>
+					<div class="col-md-3 ">
+						<select class="form-control">
+							<option>Company A</option>
+							<option>Company B</option>
+							<option>Company C</option>
+						</select>
+					</div>
+
+					<div class="col-md-1">
+						<label for="date">Lot No:</label>
+					</div>
+					<div class="col-md-3">
+						<input type="text" class="form-control" />
+					</div>
+				</div>
+				<hr />
+
+				<div class="content" id="Section2.row1">
+					<div class="box">
+						<div class="box-header text-center">
+							<h3 class="box-title ">Product Details</h3>
+						</div>
+
+						<div class="row text-center" id="Section2.row1">
+							<div class="col-md-1">&nbsp;</div>
+							<div class="col-md-1">
+								<label for="textfield7">Product:</label>
+							</div>
+							<div class="col-md-2 ">
+								<select class="form-control">
+									<option>Barkha Lawn</option>
+									<option>Batik Lawn</option>
+									<option>Sohni Lawn</option>
+								</select>
+							</div>
+
+							<div class="col-md-1">
+								<label for="date">Design No:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" class="form-control" />
+							</div>
+
+							<div class="col-md-1">
+								<label for="date">Construction:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" class="form-control" />
+							</div>
+						</div>
+						<div class="row text-center" id="Section2.row2">
+							<div class="col-md-1">&nbsp;</div>
+							<div class="col-md-1">
+								<label for="textfield7">Color:</label>
+							</div>
+							<div class="col-md-2 ">
+								<select class="form-control">
+									<option>Red</option>
+									<option>Green</option>
+									<option>Blue</option>
+								</select>
+							</div>
+
+							<div class="col-md-1">
+								<label for="date">Quantity:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" class="form-control" />
+							</div>
+
+							<div class="col-md-1">
+								<label for="date">UOM:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" class="form-control" />
+							</div>
+						</div>
+
+						<hr />
+						<!-- /.box-header -->
+						<div class="box-body no-padding">
+							<table class="table table-striped">
+								<tbody>
+									<tr>
+										<th style="width: 10px">#</th>
+										<th>Product</th>
+										<th>Quantity</th>
+										<th>Color</th>
+										<th>Construction</th>
+									</tr>
+									<tr>
+										<td>1.</td>
+										<td>Barkha Lawn</td>
+										<td>100 PCS</td>
+										<td>RED</td>
+										<td>64*64</td>
+									</tr>
+									<tr>
+										<td>2.</td>
+										<td>Sohni Lawn</td>
+										<td>1000 Meter</td>
+										<td>GREEN</td>
+										<td>64*64</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<div class="content" id="Section4.row1">
+					<div class="box">
+						<div class="box-header">
+							<h3 class="box-title">Department Details</h3>
+						</div>
+						<!-- /.box-header -->
+						<div class="box-body no-padding">
+							<table th:id="operationDetailTable" class="table table-striped">
+								<tbody>
+									<tr>
+										<td>No</td>
+										<td>Operation Name</td>
+										<td>Department</td>
+									</tr>
+
+									<tr th:each="dept :${deptList}">
+										<div th:each="order,iterStat : ${operationList}"
+											th:if="dept.Dept_ID == order.dept.Dept_ID " >
+										<td th:text="${iterStat.index}">...</td>
+										<td th:text="${ order.name}">...</td>
+										<td th:text="${order.dept.name}">...</td>
+										</div>
+									</tr>
+
+
+
+								</tbody>
+							</table>
+						</div>
+						<!-- /.box-body -->
+					</div>
+
+				</div>
+
+				<div class="row ">
+					<span class="pull-right">
+						<button type="submit" class="btn btn-danger">Cancel</button> <a
+						href="starter.html"><button type="submit"
+								class="btn-lg btn-primary">Confirm</button></a>
+					</span>
+				</div>
+
+			</div>
+		</section>
+
+
+	</div>
+	<!-- /.content-wrapper -->
+
+
+	<!-- /.content-wrapper -->
+
+
+	<div th:replace="template:: footer"></div>
+</body>
+</html>

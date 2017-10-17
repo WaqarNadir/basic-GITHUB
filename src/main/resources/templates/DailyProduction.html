@@ -1,0 +1,392 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:replace="template:: head"></div>
+
+<script th:inline="javascript">
+	function redirect() {
+		window.location = "/NewOrder";
+
+	}
+	function add() {
+		counter = counter + 1;
+		var operation = $('#departmentOP').find(":selected").val();
+		var product = $('#product').find(":selected").val();
+		var initial = $('#initial').val();
+		var openingStock = $('#openingStock').val();
+		var dailyProduction = $('#dailyProduction').val();
+		var status = $('#status').val();
+		var date = $('#date').val();
+
+		var data = operation + "," + product + "," + initial + ","
+				+ openingStock + "," + dailyProduction + "," + status + ","
+				+ date;
+
+		dataList.push(data);
+
+		var htmlrow = "<tr>" + "<td>" + counter + "</td>" + "<td>" + operation
+				+ "</td>" + "<td>" + product + "</td>" + "<td>"
+				+ dailyProduction + "</td>" + "</tr>";
+		addedItems
+		$('#addedItems').append(htmlrow);
+		$('#departmentOP').val(999);
+		$('#product').val(999);
+		$('#initial').val("");
+		$('#openingStock').val("");
+		$('#dailyProduction').val("");
+
+	}
+	function submitdata() {
+		 $.ajax({
+			url : "DP/save",
+			contentType : "application/json; charset=utf-8",
+			data : JSON.stringify(dataList),
+			type : "POST",
+			success : function(result) {
+				
+				$('#modal-success').modal({
+					backdrop : 'static',
+					Show : 'true'
+				});
+
+
+			},
+			error : function(xhr, status, error) {
+				alert("ERROR:" + xhr.responseText);
+				console.log("ERROR:" + xhr.responseText);
+			}
+		});
+		 
+	}
+
+	function getProductDetail() {
+
+		var product = $("#product").val();
+		var operation = $("#departmentOP").val();
+		var data = product.concat('!', operation);
+
+		$.ajax({
+			url : "/getProductDetail",
+			contentType : "application/json; charset=utf-8",
+			data : data,
+			type : "POST",
+			success : function(result) {
+				$('#quantity').val(result[0]);
+				$('#openingStock').val("");
+				initialCloth = result[1];
+
+				$('#initial').val(initialCloth);
+				/*	while (initialCloth == null || initialCloth == "") {
+						initialCloth = prompt(
+								"Please enter Initial CLoth assigned for this product:",
+								"");
+						$('#openingStock').val(initialCloth);
+					}
+					$('#initial').val(initialCloth);
+
+				 */},
+			error : function(xhr, status, error) {
+				alert("ERROR:" + xhr.responseText);
+				console.log("ERROR:" + xhr.responseText);
+			}
+		});
+
+	}
+	function getProductList() {
+		var orderID = $("#orderID").val();
+		//	send("/productList",orderID);
+
+		clearSelect('#product');
+		$.ajax({
+			url : "/productList",
+			contentType : "application/json; charset=utf-8",
+			data : JSON.stringify(orderID),
+			type : "POST",
+			success : function(prodType) {
+				$.each(prodType, function(key, value, dropDown) {
+					var result = value.split(',');
+					$('#lotNo').val(result[0]);
+
+					$('#product').append(
+							$("<option></option>").attr("value", result[1])
+									.text(result[2]));
+
+				});
+
+			},
+			error : function(xhr, status, error) {
+				alert("ERROR:" + xhr.responseText);
+				console.log("ERROR:" + xhr.responseText);
+			}
+		});
+
+	}
+	function clearSelect(dropdown) {
+		$(dropdown).empty();
+		$(dropdown).append(
+				$("<option></option>").attr("value", "999").text(
+						"Please Select"));
+	};
+
+	function getOperations() {
+		var Dept = $("#department").val();
+
+		//	send("/operationList",Dept);
+		clearSelect('#departmentOP');
+
+		$.ajax({
+			url : "/operationList",
+			contentType : "application/json; charset=utf-8",
+			data : JSON.stringify(Dept),
+			type : "POST",
+			success : function(prodType) {
+				$.each(prodType, function(key, value) {
+					var result = value.split(',');
+
+					$('#departmentOP').append(
+							$("<option></option>").attr("value", result[1])
+									.text(result[0]));
+				});
+
+			},
+			error : function(xhr, status, error) {
+				alert("ERROR:" + xhr.responseText);
+				console.log("ERROR:" + xhr.responseText);
+			}
+		});
+
+	}
+
+	function init() {
+		counter = 0;
+		dataList = [];
+		$('#orderID').append(
+				$("<option></option>").attr("value", "999").text(
+						"Please Select"));
+		$('#orderID').val(999);
+		$('#department').append(
+				$("<option></option>").attr("value", "999").text(
+						"Please Select"));
+		$('#department').val(999);
+	}
+	$(document).ready(function() {
+		init();
+
+		$('#DailyProduction').submit(function(event) {
+			event.preventDefault();
+			submitdata();
+
+		});
+	});
+</script>
+
+
+
+<body class="hold-transition skin-blue sidebar-mini">
+	<div th:replace="template:: wrapper"></div>
+
+	<div class="content-wrapper">
+
+		<div class="box box-danger">
+			<div class="box-header with-border text-center">
+				<h2 class="box-title">Daily Production</h2>
+			</div>
+			<hr />
+			<form id="DailyProduction" action="/DP/save" method="post">
+
+				<div class="row" id="Section1.row1">
+					<div class="col-md-1">&nbsp;</div>
+					<div class="col-md-1">
+						<label for="textfield7">Order No:</label>
+					</div>
+					<div class="col-md-3">
+						<select th:name="orderID" th:id="orderID"
+							onchange="getProductList()">
+							<option th:each="order,RowNum : ${orderList}"
+								th:value="${order.Order_ID}" th:text="${order.order_ID}">Order ID</option>
+						</select>
+					</div>
+					<div class="col-md-1">
+						<label for="date">Date:</label>
+					</div>
+					<div class="col-md-4">
+						<input type="date" name="date" th:id="date" th:name="date" />
+					</div>
+				</div>
+				<div class="row">&nbsp;</div>
+
+				<div class="row" id="Section1.row2">
+					<div class="col-md-1">&nbsp;</div>
+					<div class="col-md-1">
+						<label for="textfield7">Department:</label>
+					</div>
+					<div class="col-md-3">
+						<select th:name="department" th:id="department"
+							onchange="getOperations()">
+							<option th:each="operation,RowNum : ${deptList}"
+								th:value="${operation.Dept_ID}" th:text="${operation.name}">operation</option>
+						</select>
+					</div>
+					<div class="col-md-1">
+						<label for="date">Lot No:</label>
+					</div>
+					<div class="col-md-3">
+						<input type="text" disabled="disabled" class="form-control"
+							th:id="lotNo" />
+					</div>
+				</div>
+				<hr />
+
+				<div class="content" id="Section2.row1">
+					<div class="box">
+						<div class="box-header text-center">
+							<h3 class="box-title">Daily Production</h3>
+						</div>
+
+						<div class="row text-center" id="Section2.row1">
+							<div class="col-md-1">&nbsp;</div>
+							<div class="col-md-1">
+								<label for="textfield7">Operation Name:</label>
+							</div>
+							<div class="col-md-2">
+								<select th:name="departmentOP" th:id="departmentOP"
+									th:field="${OIP.DeptOD_ID.sequenceNo}">
+									<option value="0">Please Select</option>
+								</select>
+							</div>
+							<div class="col-md-1">
+								<label class="control-label col-md-2" for="Pt">product
+									Name</label>
+							</div>
+							<div class="col-md-2">
+								<select th:name="product" th:id="product"
+									th:field="${OIP.orderDetail.remarks}"
+									onchange="getProductDetail()">
+									<option value="0">Please Select</option>
+								</select>
+							</div>
+							<div class="col-md-1">
+								<label for="date">Initial Cloth :</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" class="form-control" id="initial"
+									th:field="${OIP.initialCloth}" disabled="disabled"
+									placeholder="Initial Cloth " />
+							</div>
+						</div>
+						<div class="row text-center" id="Section2.row2">
+
+							<div class="col-md-1">
+								<label for="date">Quantity:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" th:id="quantity" class="form-control" />
+							</div>
+							<div class="col-md-1">
+								<label for="textfield7">Opening Stock:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" th:id="openingStock" class="form-control" />
+							</div>
+							<div class="col-md-1">
+								<label for="date">Daily Production:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" th:id="dailyProduction" class="form-control" />
+							</div>
+							<div class="col-md-1">
+								<label for="date">--:</label>
+							</div>
+							<div class="col-md-2">
+								<select class="form-control" th:id="status" th:name="status">
+									<option value="open" selected="selected">open</option>
+									<option value="closed">Closed</option>
+									<option value="pending">Pending</option>
+								</select>
+							</div>
+
+						</div>
+						<div class="row text-center" id="Section2.row3">
+							<div class="col-md-12">
+								<br /> <input type="button" value="Add" id="Add"
+									onclick="add()" />
+							</div>
+						</div>
+						<!-- 					</form> -->
+						<hr />
+						<br />
+
+						<!-- /.box-header -->
+						<div class="box-body no-padding">
+							<table class="table table-striped">
+								<tbody th:id="addedItems">
+									<tr>
+										<th style="width: 10px">#</th>
+										<th>Operation</th>
+										<th>Product</th>
+										<th>Production</th>
+									</tr>
+
+								</tbody>
+							</table>
+						</div>
+						<!-- /.box-body -->
+
+					</div>
+					<!--	<div class="content" id="Section4.row1">
+				
+					 <div class="box">
+						<div class="box-header">
+							<h3 class="box-title">Item wise Details</h3>
+						</div>
+						/.box-header
+						<div class="box-body no-padding">
+							<table class="table table-striped">
+								<tbody>
+									<tr>
+										<th scope="col">Item to Produce</th>
+										<th scope="col">Quantity Per Unit</th>
+										<th scope="col">Total</th>
+									</tr>
+									<tr>
+										<td>Shalwar</td>
+										<td>2.5 Meter</td>
+										<td>10,000 meter</td>
+									</tr>
+									<tr>
+										<td>Kameez</td>
+										<td>2.5 Meter</td>
+										<td>10,000 meter<br />
+										</td>
+									</tr>
+									<tr>
+										<td>Dupatta</td>
+										<td>2.5 Meter</td>
+										<td>10,000 meter<br />
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						/.box-body
+					</div>
+					
+				</div> -->
+					<div class="row">
+						<div class="col-sm-3 pull-right">
+							<button type="submit" class="btn btn-danger">Cancel</button>
+							<a href="starter.html">
+								<button type="submit" class="btn-lg btn-primary" id="Confirm"
+									data-toggle="modal" >Confirm</button>
+							</a>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<!-- /.content-wrapper -->
+	<div th:replace="template:: modal"></div>
+	<div th:replace="template:: footer"></div>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:replace="template:: head"></div>
+
+<script th:inline="javascript">
+
+$(document).ready(function() {
+	
+	 orderID = /*[[${session.orderID}]]*/;
+	 lotNo = /*[[${session.lotNo}]]*/;
+	 
+
+	 orderList = [];
+	prodList = [];
+	productList = [];
+
+	
+	$('#orderID').val(orderID);
+	$('#lotNo').val(lotNo);
+	
+	$('#addProduct').submit(
+		function(event) {
+			event.preventDefault();
+			 var date = new Date($('#date').val());
+			partyName = $('#partyName').val();
+			 orderDate =JSON.stringify(date.toString());
+				
+			submitData();
+		});
+});
+
+
+function submitData(){
+	
+	data = {
+			"orderDetail" :orderList,
+			"product" : productList,
+			"partyName" : partyName,
+			"date" : orderDate
+	};
+	
+	
+	$.ajax({
+		url : "Order/save",
+		 contentType: "application/json; charset=utf-8",
+		data :JSON.stringify(data),
+		type : "POST",
+		success : function(response) {
+			
+ 			 window.location.href  ="/orderDetails";
+			        
+		},
+		error : function(xhr, status, error) {
+			alert("ERROR:"+xhr.responseText);
+			console.log("ERROR:"+xhr.responseText);
+		}	
+	});
+
+}
+function add(){
+	var orderDetail = {};
+
+	var product={
+		"name" : $("#prodName").find(":selected").text(),
+		"prodType" :  $("#prodType").find(":selected").text()
+	};
+	var productDetail = {
+			"color" : $("#Color").find(":selected").text() ,
+			"designNo" :$("#DesignNo").val(),
+			"product" : product
+	}
+	
+	orderDetail.quantity = $("#Quantity").val();
+	orderDetail.construction = $("#Construction").val() ;
+	orderDetail.price = "123";
+	orderDetail.remarks="remarks";
+	orderDetail.prodDetail = productDetail;
+	
+	var prodType=product.name + "/"+ product.prodType;
+	
+	productList.push(prodType);
+	orderList.push(orderDetail);
+	prodList.push(productDetail);
+	
+	
+		
+	var htmlrow ="<tr>"+
+	"<td>" + "</td>"+
+	"<td>" + product.name+ "</td>"+
+	"<td>" + orderDetail.quantity + "</td>"+
+	"<td>" + orderDetail.prodDetail.color+ "</td>"+
+	"<td>" +orderDetail.construction  + "</td>"+
+	"</tr>";         
+    $('#addedProducts').append(htmlrow);
+	
+    $("#addProduct")[0].reset();
+    $('#orderID').val(orderID);
+	$('#lotNo').val(lotNo);
+}
+
+function onProductChange() {
+	var prodName=$('#prodName').val();
+	
+
+	$('#prodType').empty();
+
+	 $.ajax({
+		    type: "POST",
+		    data:prodName,
+		    url: "/getProdType?",
+		    success : function(prodType) {
+		    	$.each(prodType, function(key, value) {
+		    		 
+		    	     $('#prodType')
+		    	         .append($("<option></option>")
+		    	                    .attr("value",key)
+		    	                    .text(value)); 
+		    	});
+	          
+	        }
+	});
+}
+
+</script>
+
+
+
+<body class="hold-transition skin-blue sidebar-mini">
+	<div th:replace="template:: wrapper"></div>
+
+	<div class="content-wrapper">
+
+		<div class="box box-danger">
+			<div class="box-header with-border text-center">
+				<h2 class="box-title">Manufacturing order</h2>
+			</div>
+			<hr />
+			<form id="addProduct" action="/save" method="post"
+				th:object="${orderDetail}">
+
+				<div class="row" id="Section1.row1">
+					<div class="col-md-1">&nbsp;</div>
+					<div class="col-md-1">
+						<label for="textfield7">order ID:</label>
+					</div>
+					<div class="col-md-3">
+						<input type="text" class="form-control" disabled="disabled"
+							th:field="${orderDetail.order.order_ID}"
+							placeholder="order Number" th:id="orderID" />
+					</div>
+					<div class="col-md-1">
+						<label for="date">Date:</label>
+					</div>
+					<div class="col-md-4">
+						<input type="date" name="date" th:id="date" th:name="date" />
+					</div>
+				</div>
+				<div class="row">&nbsp;</div>
+
+				<div class="row" id="Section1.row2">
+					<div class="col-md-1">&nbsp;</div>
+					<div class="col-md-1">
+						<label for="textfield7">Party Name:</label>
+					</div>
+					<div class="col-md-3">
+						<select class="form-control" th:id="partyName">
+							<option th:each="person ,iterStat : ${personList}"
+								th:value="${person.PersonID}"
+								th:text="${person.Fname +' ' +person.Lname}">						
+						</option>
+						</select>
+					</div>
+					<div class="col-md-1">
+						<label for="date">Lot No:</label>
+					</div>
+					<div class="col-md-3">
+						<input type="text" class="form-control" th:id="lotNo"
+							disabled="disabled" th:field="${orderDetail.order.LotNo}" />
+					</div>
+				</div>
+				<hr />
+
+				<div class="content" id="Section2.row1">
+					<div class="box">
+						<div class="box-header text-center">
+							<h3 class="box-title">product Details</h3>
+						</div>
+
+						<div class="row text-center" id="Section2.row1">
+							<div class="col-md-1">&nbsp;</div>
+							<div class="col-md-1">
+								<label for="textfield7">product:</label>
+							</div>
+							<div class="col-md-2">
+
+
+								<select th:name="Product" th:id="prodName" class="form-control"
+									onchange="onProductChange()">
+
+									<option th:each="product,RowNum : ${productList}"
+										th:value="${product.prod_ID}" th:text="${product.Name}">product Name</option>
+								</select>
+							</div>
+							<div class="col-md-1">
+								<label class="control-label col-md-2" for="Pt">product
+									Type</label>
+							</div>
+							<div class="col-md-2">
+								<select class="form-control" th:id="prodType">
+									<option value="0">Please Select </option>
+								</select>
+							</div>
+							<div class="col-md-1">
+								<label for="date">Design No:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" class="form-control"
+									th:field="*{prodDetail.DesignNo}" th:id="DesignNo" />
+							</div>
+						</div>
+						<div class="row text-center" id="Section2.row2">
+
+							<div class="col-md-1">
+								<label for="date">Construction:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" class="form-control"
+									th:field="${orderDetail.Construction}" />
+							</div>
+							<div class="col-md-1">
+								<label for="textfield7">Color:</label>
+							</div>
+							<div class="col-md-2">
+								<select class="form-control" th:id="Color" th:name="Color"
+									th:field='*{prodDetail.Color}'>
+									<option value='Red'>Red</option>
+									<option value='Green'>Green</option>
+									<option value='Blue'>Blue</option>
+								</select>
+							</div>
+							<div class="col-md-1">
+								<label for="date">Quantity:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" class="form-control"
+									th:field="${orderDetail.Quantity}" />
+							</div>
+							<div class="col-md-1">
+								<label for="date">UOM:</label>
+							</div>
+							<div class="col-md-2">
+								<select class="form-control" th:id="UOM" th:name="UOM"
+									th:field="*{prodDetail.product.UOM}">
+									<option value="Pcs">Pcs</option>
+									<option value="Meter">Meter</option>
+									<option value="other">Other</option>
+								</select>
+							</div>
+
+						</div>
+						<div class="row text-center" id="Section2.row3">
+							<div class="col-md-12">
+								<br /> <input type="button" value="Add" id="Add"
+									onclick="add()" />
+							</div>
+						</div>
+						<!-- 					</form> -->
+						<hr />
+						<br />
+
+						<!-- /.box-header -->
+						<div class="box-body no-padding">
+							<table class="table table-striped">
+								<tbody th:id="addedProducts" th:remove="all-but-first">
+									<tr>
+										<th style="width: 10px">#</th>
+										<th>product</th>
+										<th>Quantity</th>
+										<th>Color</th>
+										<th>Construction</th>
+									</tr>
+									<tr>
+										<td>1.</td>
+										<td>Barkha Lawn</td>
+										<td>100 PCS</td>
+										<td>RED</td>
+										<td>64*64</td>
+									</tr>
+									<tr>
+										<td>2.</td>
+										<td>Sohni Lawn</td>
+										<td>1000 Meter</td>
+										<td>GREEN</td>
+										<td>64*64</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<!-- /.box-body -->
+
+					</div>
+					<!--	<div class="content" id="Section4.row1">
+				
+					 <div class="box">
+						<div class="box-header">
+							<h3 class="box-title">Item wise Details</h3>
+						</div>
+						/.box-header
+						<div class="box-body no-padding">
+							<table class="table table-striped">
+								<tbody>
+									<tr>
+										<th scope="col">Item to Produce</th>
+										<th scope="col">Quantity Per Unit</th>
+										<th scope="col">Total</th>
+									</tr>
+									<tr>
+										<td>Shalwar</td>
+										<td>2.5 Meter</td>
+										<td>10,000 meter</td>
+									</tr>
+									<tr>
+										<td>Kameez</td>
+										<td>2.5 Meter</td>
+										<td>10,000 meter<br />
+										</td>
+									</tr>
+									<tr>
+										<td>Dupatta</td>
+										<td>2.5 Meter</td>
+										<td>10,000 meter<br />
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						/.box-body
+					</div>
+					
+				</div> -->
+					<div class="row">
+						<div class="col-sm-3 pull-right">
+							<button type="submit" class="btn btn-danger">Cancel</button>
+							<a href="starter.html">
+								<button type="submit" class="btn-lg btn-primary" id="Confirm"
+									data-backdrop="static" data-toggle="modal"
+									data-target="#modal-success">Confirm</button>
+							</a>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<!-- /.content-wrapper -->
+	<div th:replace="template:: modal"></div>
+
+	<div th:replace="template:: footer"></div>
+</body>
+</html>
