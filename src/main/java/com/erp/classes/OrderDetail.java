@@ -1,6 +1,7 @@
 package com.erp.classes;
 
 import java.io.Serializable;
+import java.sql.Date;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,41 +17,61 @@ import javax.persistence.TableGenerator;
 public class OrderDetail implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-
-	@Column(name = "Construction",nullable=true)
+	@Column(name = "Construction", nullable = true)
 	private String Construction;
 
 	@Id
-	@TableGenerator(
-	        name="ordDetailID", 
-	        table="ID_GEN", 
-	        pkColumnName="GEN_KEY", 
-	        valueColumnName="GEN_VALUE", 
-	        pkColumnValue="ordDetailID", 
-	        allocationSize=1)
-	    @GeneratedValue(strategy=GenerationType.TABLE, generator="ordDetailID")
+	@TableGenerator(name = "ordDetailID", table = "ID_GEN", pkColumnName = "GEN_KEY", valueColumnName = "GEN_VALUE", pkColumnValue = "ordDetailID", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ordDetailID")
 	@Column(name = "OrdDetail_ID")
 	private Integer ordDetail_ID;
 
-	@ManyToOne(cascade= CascadeType.ALL)
-	@JoinColumn(name = "Order_ID",nullable=true)
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "Order_ID", nullable = true)
 	private Order order;
 
-	@Column(name = "Price",nullable=true)
+	@Column(name = "Price", nullable = true)
 	private double Price;
 
-	@ManyToOne(cascade= CascadeType.ALL)
-	@JoinColumn(name = "ProdDetail_ID",nullable=true)
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "ProdDetail_ID", nullable = true)
 	private ProductDetail prodDetail;
 
-	@Column(name = "Quantity",nullable=true)
+	@Column(name = "Quantity", nullable = true)
 	private double Quantity;
 
-	@Column(name = "Remarks",nullable=true)
-	private String Remarks;
+	public Date getExpectedStartDate() {
+		return expectedStartDate;
+	}
 
+	public void setExpectedStartDate(Date expectedStartDate) {
+		this.expectedStartDate = expectedStartDate;
+	}
+
+	public int getNoOfColors() {
+		return noOfColors;
+	}
+
+	public void setNoOfColors(int noOfColors) {
+		this.noOfColors = noOfColors;
+	}
+
+	@Column(name = "Remarks", nullable = true)
+	private String Remarks;
+	@Column(name = "ExpectedEndDate")
+	private Date expectedEndDate;
 	
-	//-------------------------- setter ------------------------------------
+	@Column(name = "ExpectedStartDate")
+	private Date expectedStartDate;
+	
+	@Column(name = "NoOfColors")
+	private int noOfColors;
+
+	// -------------------------- getter ------------------------------------
+
+	public Date getExpectedEndDate() {
+		return expectedEndDate;
+	}
 
 	public String getConstruction() {
 		return Construction;
@@ -79,17 +100,23 @@ public class OrderDetail implements Serializable {
 	public String getRemarks() {
 		return Remarks;
 	}
-public OrderDetail(boolean createFullObject) {
-	if(createFullObject) {
-	setProdDetail(new ProductDetail());
-//	getprodDetail().setProduct(new Product());
-	}	// just to pass it in javascript for ajax call 
-}
 
-public OrderDetail() {
-	// TODO Auto-generated constructor stub
-}
-	//-------------------------- setter ------------------------------------
+	public OrderDetail(boolean createFullObject) {
+		if (createFullObject) {
+			setProdDetail(new ProductDetail());
+			// getprodDetail().setProduct(new Product());
+		} // just to pass it in javascript for ajax call
+	}
+
+	public OrderDetail() {
+		// TODO Auto-generated constructor stub
+	}
+
+	// -------------------------- setter ------------------------------------
+	public void setExpectedEndDate(Date expectedEndDate) {
+		this.expectedEndDate = expectedEndDate;
+	}
+
 	public void setConstruction(String construction) {
 		Construction = construction;
 	}

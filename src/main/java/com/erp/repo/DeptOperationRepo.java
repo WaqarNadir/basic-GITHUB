@@ -12,6 +12,9 @@ import java.lang.String;
 @Repository
 public interface DeptOperationRepo extends CrudRepository<DeptOperationDetails, Integer> {
 
-List<DeptOperationDetails> findByName(String name);
-List<DeptOperationDetails> findByDept(Department dept_id);
+	List<DeptOperationDetails> findByName(String name);
+
+	List<DeptOperationDetails> findByDept(Department dept_id);
+
+	List<DeptOperationDetails> findByColor(String color);
 }

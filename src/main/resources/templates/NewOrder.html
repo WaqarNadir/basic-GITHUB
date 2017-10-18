@@ -83,8 +83,6 @@ function add(){
 	orderList.push(orderDetail);
 	prodList.push(productDetail);
 	
-	
-		
 	var htmlrow ="<tr>"+
 	"<td>" + "</td>"+
 	"<td>" + product.name+ "</td>"+
@@ -108,6 +106,7 @@ function onProductChange() {
 	 $.ajax({
 		    type: "POST",
 		    data:prodName,
+		    contentType: "application/json; charset=utf-8",
 		    url: "/getProdType?",
 		    success : function(prodType) {
 		    	$.each(prodType, function(key, value) {
@@ -116,6 +115,38 @@ function onProductChange() {
 		    	         .append($("<option></option>")
 		    	                    .attr("value",key)
 		    	                    .text(value)); 
+		    	});
+	          
+	        }
+	});
+}
+
+function getMachine(){
+	var colors=$('#noOfColor').val(); 
+	$('#machine').empty();
+	$('#machine1').empty();
+	$('#machine2').empty();
+	 $.ajax({
+		    type: "POST",
+		    contentType: "application/json; charset=utf-8",
+		    data:colors,
+		    url: "/getMachine",
+		    success : function(prodType) {
+		    	var counter =0;
+		    	$.each(prodType, function(key, value) {
+		    		 counter++;
+		    	     $('#machine')
+		    	         .append($("<option></option>")
+		    	                    .attr("value",key)
+		    	                    .text(value)); 
+		    	     $('#machine1')
+	    	         .append($("<option></option>")
+	    	                    .attr("value",key)
+	    	                    .text(value)); 
+		    	     $('#machine2')
+	    	         .append($("<option></option>")
+	    	                    .attr("value",key)
+	    	                    .text(value)); 
 		    	});
 	          
 	        }
@@ -232,6 +263,23 @@ function onProductChange() {
 								<label for="textfield7">Color:</label>
 							</div>
 							<div class="col-md-2">
+								<select class="form-control" th:id="noOfColor" th:name="noOfColor" onchange="getMachine()">
+									<option value='1'>1</option>
+									<option value='2'>2</option>
+									<option value="4">4</option>
+									<option value='4'>5</option>
+									<option value='5'>6</option>
+									<option value='6'>7</option>
+									<option value='7'>8</option>
+									<option value='8'>9</option>
+									<option value='9'>10</option>
+									<option value='10'>11</option>
+									<option value='11'>12</option>
+									<option value='12'>12</option>
+								</select>
+							</div>
+
+							<div class="col-md-2">
 								<select class="form-control" th:id="Color" th:name="Color"
 									th:field='*{prodDetail.Color}'>
 									<option value='Red'>Red</option>
@@ -300,45 +348,72 @@ function onProductChange() {
 						<!-- /.box-body -->
 
 					</div>
-					<!--	<div class="content" id="Section4.row1">
-				
-					 <div class="box">
-						<div class="box-header">
-							<h3 class="box-title">Item wise Details</h3>
+
+					<div class="content" id="Section4.row1">
+
+						<div class="box" id="DetailBox">
+							<div class="box-header center">
+								<h3 class="box-title">Item wise Details</h3>
+							</div>
+
+							<div class="box-body no-padding">
+								<table class="table table-striped">
+
+									<tbody>
+										<th>Name</th>
+										<th>Machine</th>
+										<th>Machine Availability Date</th>
+										<th>Expected Completion Date</th>
+										<tr>
+											<td>Shalwar</td>
+											<td><select class="form-control" id="machine">
+													<option value='99'> please select machine</option>
+
+											</select></td>
+											<td><input class="form-control" id="input1"
+												disabled="disabled" /></td>
+											<td><input id="input11" class="form-control"
+												disabled="disabled" /></td>
+										</tr>
+										<tr>
+											<td>Kameez</td>
+											<td><select class="form-control" id="machine">
+													<option value='99'> please select machine</option>
+
+											</select></td>
+											<td><input id="input2" class="form-control"
+												disabled="disabled" /></td>
+											<td><input id="input22" class="form-control"
+												disabled="disabled" /></td>
+										</tr>
+										<tr>
+											<td>Duppatta</td>
+											<td><select class="form-control" id="machine">
+													<option value='99'> please select machine</option>
+													<option value='1'>08 color |&#160;Rotary</option>
+													<option value='2'>12 color |&#160;RD4</option>
+													<option value='3'>03 color |&#160;Buzer 1</option>
+													<option value='4'>05 color |&#160;Buzer 2  </option>
+													<option value='5'>04 color |&#160;Buzer 3 Ichinose</option>
+													<option value='6'>06 color |&#160;Rajani Buzer 4 </option>
+													<option value='7'>07 color |&#160;Rajani Buzer 4</option>
+											</select></td>
+											<td><input id="input3" class="form-control"
+												disabled="disabled" /></td>
+											<td><input class="form-control" id="input33"
+												disabled="disabled" /></td>
+										</tr>
+
+									</tbody>
+								</table>
+
+							</div>
+
 						</div>
-						/.box-header
-						<div class="box-body no-padding">
-							<table class="table table-striped">
-								<tbody>
-									<tr>
-										<th scope="col">Item to Produce</th>
-										<th scope="col">Quantity Per Unit</th>
-										<th scope="col">Total</th>
-									</tr>
-									<tr>
-										<td>Shalwar</td>
-										<td>2.5 Meter</td>
-										<td>10,000 meter</td>
-									</tr>
-									<tr>
-										<td>Kameez</td>
-										<td>2.5 Meter</td>
-										<td>10,000 meter<br />
-										</td>
-									</tr>
-									<tr>
-										<td>Dupatta</td>
-										<td>2.5 Meter</td>
-										<td>10,000 meter<br />
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-						/.box-body
+
 					</div>
-					
-				</div> -->
+
+
 					<div class="row">
 						<div class="col-sm-3 pull-right">
 							<button type="submit" class="btn btn-danger">Cancel</button>
@@ -349,6 +424,7 @@ function onProductChange() {
 							</a>
 						</div>
 					</div>
+
 				</div>
 			</form>
 		</div>

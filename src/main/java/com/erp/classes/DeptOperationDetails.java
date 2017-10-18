@@ -43,6 +43,14 @@ public class DeptOperationDetails implements Serializable {
 
 	@Column(name = "SequenceNo")
 	private int sequenceNo;
+	@Column(name = "Color")
+	private int color;
+		
+
+		return color;
+	}
+	public void setColor(int color) {
+		this.color = color;
 
 	public DeptOperationDetails() {
 		// TODO Auto-generated constructor stub

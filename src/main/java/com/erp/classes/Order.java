@@ -42,9 +42,22 @@ public class Order implements Serializable {
 
 	@Column(name = "EstimatedDate")
 	private Date estimatedDate;
+	
+	@Column(name = "StartDate")
+	private Date startDate;
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
 
 	@Column(name = "LotNo")
 	private String lotNo;
+	@Column(name = "refNo")
+	private String refNo;
 
 	@Id
 	@TableGenerator(name = "orderID", table = "ID_GEN", pkColumnName = "GEN_KEY", valueColumnName = "GEN_VALUE", pkColumnValue = "orderID", allocationSize = 1)
@@ -58,6 +71,14 @@ public class Order implements Serializable {
 
 	@Column(name = "Remarks")
 	private String remarks;
+
+	public String getRefNo() {
+		return refNo;
+	}
+
+	public void setRefNo(String refNo) {
+		this.refNo = refNo;
+	}
 
 	public Order() {
 	}

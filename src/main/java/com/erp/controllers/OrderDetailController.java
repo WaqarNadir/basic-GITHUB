@@ -23,26 +23,26 @@ public class OrderDetailController {
 			return service.getAll();
 		
 	}
-	@RequestMapping(method=RequestMethod.POST,value="/NewOrderDetail")
-	public void update(@RequestBody OrderDetail OrderDetail) {
-		service.save(OrderDetail);
-		
-	}
-	@RequestMapping(method=RequestMethod.PUT,value="/UpdateOrderDetail/{id}")
-	public void update(@RequestBody OrderDetail OrderDetail,@PathVariable int id) {
-		service.update(id, OrderDetail);
-		
-	}
-	@RequestMapping(method=RequestMethod.DELETE,value="/OrderDetail/{id}")
-	public void delete(@PathVariable int id) {
-		service.delete(id);
-		
-	}
-	@RequestMapping(method=RequestMethod.GET,value="/OrderDetail/{id}")
-	public OrderDetail GetOrder(@PathVariable int id) {
-		return service.find(id);
-		
-	}
+//	@RequestMapping(method=RequestMethod.POST,value="/NewOrderDetail")
+//	public void update(@RequestBody OrderDetail OrderDetail) {
+//		service.save(OrderDetail);
+//		
+//	}
+//	@RequestMapping(method=RequestMethod.PUT,value="/UpdateOrderDetail/{id}")
+//	public void update(@RequestBody OrderDetail OrderDetail,@PathVariable int id) {
+//		service.update(id, OrderDetail);
+//		
+//	}
+//	@RequestMapping(method=RequestMethod.DELETE,value="/OrderDetail/{id}")
+//	public void delete(@PathVariable int id) {
+//		service.delete(id);
+//		
+//	}
+//	@RequestMapping(method=RequestMethod.GET,value="/OrderDetail/{id}")
+//	public OrderDetail GetOrder(@PathVariable int id) {
+//		return service.find(id);
+//		
+//	}
 	
 
 }

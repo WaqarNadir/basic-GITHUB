@@ -2,8 +2,11 @@ package com.erp.controllers;
 
 import java.io.IOException;
 import java.sql.Date;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import com.erp.classes.Department;
 import com.erp.classes.DeptOperationDetails;
 import com.erp.classes.OperationInProgress;
 import com.erp.classes.Order;
@@ -34,6 +38,7 @@ import com.erp.classes.Person;
 import com.erp.classes.Product;
 import com.erp.classes.ProductDetail;
 import com.erp.services.DepartmentService;
+import com.erp.services.DeptOperationService;
 import com.erp.services.OperationInProgessService;
 import com.erp.services.OrderDetailService;
 import com.erp.services.OrderService;
@@ -58,32 +63,30 @@ public class OrderController {
 	private ProductDetailService prodDetailService;
 
 	List<Product> productlist;
-	List<Person> personName;
+	List<Person> personList;
 	List<OrderDetail> orderDetailList;
 	Product selectedProduct;
 	Order savedOrder;
+	DecimalFormat formatter = new DecimalFormat("00");
+	
 
 	// ----------------------
 	@Autowired
 	private DepartmentService DeptService;
 	@Autowired
-	private DeptOperationController operationService;
+	private DeptOperationService operationService;
 	@Autowired
 	private OperationInProgessService OIPservice;
 
-	// List<Product> productlist;
-	// List<Person> personName;
-	// List<OrderDetail> orderDetailList;
-	// Product selectedProduct;
 	List<DeptOperationDetails> operationsList;
 	List<OperationInProgress> OIPList;
 
 	@GetMapping(value = "/NewOrder")
 	public String NewOrder(Model model, HttpSession session) {
 
-		personName = new ArrayList<Person>();
+		personList = new ArrayList<Person>();
 
-		session.setAttribute("orderID", getOrderNo());
+		session.setAttribute("orderID", getRefNo());
 		session.setAttribute("lotNo", getLotNo());
 		session.setAttribute("orderDetails", new OrderDetail(true));
 
@@ -127,13 +130,15 @@ public class OrderController {
 
 	}
 
+	private void init() {
+		operationsList = new ArrayList<DeptOperationDetails>();
+		OIPList = new ArrayList<OperationInProgress>();
+	}
+
 	@GetMapping("orderDetails")
 	public String OrderDetail(Model model) {
 		model.addAttribute("ODList", orderDetailList);
-
 		model.addAttribute("order", savedOrder);
-		operationsList = new ArrayList<DeptOperationDetails>();
-		OIPList = new ArrayList<OperationInProgress>();
 		operationsList = operationService.getAll();
 		model.addAttribute("operationList", operationsList);
 		model.addAttribute("dept", DeptService.getAll());
@@ -142,14 +147,12 @@ public class OrderController {
 	}
 
 	@PostMapping(value = "getProdType")
-	public @ResponseBody List<String> hello(@Valid @RequestBody String search) {
+	public @ResponseBody List<String> hello(@Valid @RequestBody String product) {
 
 		List<String> result = new ArrayList<>();
-		String[] product = search.split("=");
 		for (int i = 0; i < productlist.size(); i++) {
 
-			if (productlist.get(i).getProd_ID().toString().equals(product[0])) {
-				System.out.println(search);
+			if (productlist.get(i).getProd_ID().toString().equals(product)) {
 				System.out.println(productlist.get(i).getProdType());
 				result.add(productlist.get(i).getProdType());
 			}
@@ -158,27 +161,30 @@ public class OrderController {
 		return result;
 	}
 
+	@PostMapping(value = "getMachine")
+	public @ResponseBody List<String> getOperation(@RequestBody String color) {
+		List<String> result = new ArrayList<>();
+		Department dept = DeptService.findByName("Printing").get(0);
+		operationsList = operationService.findByDept(dept);
+		operationsList.sort(Comparator.comparing(DeptOperationDetails::getColor));
+		
+		for (DeptOperationDetails deptOD : operationsList) {
+			if (deptOD != null && deptOD.getColor() >= Integer.parseInt(color)) {
+				String formattedValue = formatter.format(deptOD.getColor());
+				result.add( formattedValue +" Colors | "+deptOD.getName());
+			}
+		}
+
+		return result;
+
+	}
+
 	@GetMapping("/ViewOrder")
 	public String getAll(Model model) {
 		List<Order> orderList = null;
 		orderList = orderService.getAll();
 		model.addAttribute("orderList", orderList);
 		return "ViewAllOrder";
-	}
-
-	public List<Person> getPerson() {
-
-		personName = personService.getAll();
-		return personName;
-		// int i = 0;
-		//
-		// for (Person person : personService.getAll()) {
-		//
-		// personName.add(i, person.getFname() + " " + person.getLname());
-		// i++;
-		//
-		// }
-
 	}
 
 	public Product getSelectedProduct(String product) {
@@ -196,11 +202,23 @@ public class OrderController {
 	}
 
 	public Person selectedPerson(int personID) {
-		for (Person p : personName) {
+		for (Person p : personList) {
 			if (p.getPersonID() == personID)
 				return p;
 		}
 		return null;
+	}
+
+	public List<Person> getPerson() {
+
+		personList = personService.getAll();
+		return personList;
+
+	}
+
+	protected List<Product> getProductList() {
+		productlist = ProdService.findAll();
+		return productlist;
 	}
 
 	public String getLotNo() {
@@ -210,11 +228,11 @@ public class OrderController {
 		return lotNo;
 	}
 
-	public String getOrderNo() {
-		String nextOrderID = "MO-" + String.format("%05d", (getOrderID() + 1)); // 5 digit formated
+	public String getRefNo() {
+		String refNo = "MO-" + String.format("%05d", (getOrderID() + 1)); // 5 digit formated
 		// will be changed to XML parameter
 
-		return nextOrderID;
+		return refNo;
 	}
 
 	int orderID;
@@ -222,11 +240,6 @@ public class OrderController {
 	private int getOrderID() {
 		orderID = orderService.lastPKValue();
 		return orderID;
-	}
-
-	protected List<Product> getProductList() {
-		productlist = ProdService.findAll();
-		return productlist;
 	}
 
 }
