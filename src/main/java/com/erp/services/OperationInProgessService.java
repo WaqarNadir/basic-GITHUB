@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.erp.classes.DeptOperationDetails;
 import com.erp.classes.OperationInProgress;
 import com.erp.classes.OrderDetail;
 import com.erp.repo.OperationInProgressRepo;
@@ -43,8 +44,20 @@ public class OperationInProgessService {
 		repo.findAll().forEach(operationInProgressList::add);
 		return operationInProgressList;
 	}
-	
-	public List<OperationInProgress> findByOrderDetail(OrderDetail orderdetail){
+
+	public List<OperationInProgress> findByOrderDetail(OrderDetail orderdetail) {
 		return repo.findByOrderDetail(orderdetail);
+	}
+
+	public List<OperationInProgress> findByDeptODAndOrderDetail(DeptOperationDetails deptOD, OrderDetail orderDetail) {
+		return repo.findByDeptODAndOrderDetail(deptOD, orderDetail);
+	}
+
+	public List<OperationInProgress> findByDeptOD(DeptOperationDetails deptod) {
+		return repo.findByDeptOD(deptod);
+	}
+
+	public List<OperationInProgress> findByDeptODAndStatus(DeptOperationDetails deptod, String status) {
+		return repo.findByDeptODAndStatus(deptod, status);
 	}
 }

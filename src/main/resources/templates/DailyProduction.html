@@ -60,11 +60,15 @@
 	}
 
 	function getProductDetail() {
-
+		
+		
 		var product = $("#product").val();
 		var operation = $("#departmentOP").val();
 		var data = product.concat('!', operation);
 
+		 if(product == '999') 
+	         return;
+		 
 		$.ajax({
 			url : "/getProductDetail",
 			contentType : "application/json; charset=utf-8",
@@ -74,8 +78,10 @@
 				$('#quantity').val(result[0]);
 				$('#openingStock').val("");
 				initialCloth = result[1];
+				closingStock = result[2];
 
 				$('#initial').val(initialCloth);
+				$('#openingStock').val(closingStock);
 				/*	while (initialCloth == null || initialCloth == "") {
 						initialCloth = prompt(
 								"Please enter Initial CLoth assigned for this product:",
@@ -250,7 +256,7 @@
 							</div>
 							<div class="col-md-2">
 								<select th:name="departmentOP" th:id="departmentOP"
-									th:field="${OIP.DeptOD_ID.sequenceNo}">
+									th:field="${OIP.deptOD.sequenceNo}">
 									<option value="0">Please Select</option>
 								</select>
 							</div>
@@ -262,7 +268,7 @@
 								<select th:name="product" th:id="product"
 									th:field="${OIP.orderDetail.remarks}"
 									onchange="getProductDetail()">
-									<option value="0">Please Select</option>
+									<option value="99">Please Select</option>
 								</select>
 							</div>
 							<div class="col-md-1">
@@ -280,13 +286,13 @@
 								<label for="date">Quantity:</label>
 							</div>
 							<div class="col-md-2">
-								<input type="text" th:id="quantity" class="form-control" />
+								<input type="text" th:id="quantity" disabled="disabled" class="form-control" />
 							</div>
 							<div class="col-md-1">
 								<label for="textfield7">Opening Stock:</label>
 							</div>
 							<div class="col-md-2">
-								<input type="text" th:id="openingStock" class="form-control" />
+								<input type="text" th:id="openingStock" disabled="disabled" class="form-control" />
 							</div>
 							<div class="col-md-1">
 								<label for="date">Daily Production:</label>

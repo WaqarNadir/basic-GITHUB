@@ -11,10 +11,21 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.TableGenerator;
 
 @Entity
+@NamedQuery(name = "DailyProduction.LatestClosingStock", 
+query = "SELECT DP FROM DailyProduction DP where DP.oIP = :oip order by DP.date DESC ")
 public class DailyProduction implements Serializable {
+	public OperationInProgress getOIP() {
+		return oIP;
+	}
+
+	public void setOIP(OperationInProgress oIP) {
+		this.oIP = oIP;
+	}
+
 	private static final long serialVersionUID = 1L;
 
 	
@@ -22,7 +33,7 @@ public class DailyProduction implements Serializable {
 	
 	@ManyToOne(cascade=CascadeType.MERGE)
 	@JoinColumn(name ="OIP_ID")
-	private OperationInProgress OIP_ID;
+	private OperationInProgress oIP;
 	
 	@Id
 	@TableGenerator(
@@ -98,13 +109,7 @@ public class DailyProduction implements Serializable {
 		this.stockInHand = stockInHand;
 	}
 
-	public OperationInProgress getOIP_ID() {
-		return OIP_ID;
-	}
-
-	public void setOIP_ID(OperationInProgress oIP_ID) {
-		OIP_ID = oIP_ID;
-	}
+	
 
 	public Integer getDP_ID() {
 		return DP_ID;

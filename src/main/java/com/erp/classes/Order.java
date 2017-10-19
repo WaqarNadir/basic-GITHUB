@@ -37,8 +37,8 @@ public class Order implements Serializable {
 	@Column(name = "Date")
 	private Date date;
 
-	@Column(name = "DelieveryDate")
-	private Date delieveryDate;
+	@Column(name = "CompletionDate")
+	private Date completionDate;
 
 	@Column(name = "EstimatedDate")
 	private Date estimatedDate;
@@ -71,6 +71,18 @@ public class Order implements Serializable {
 
 	@Column(name = "Remarks")
 	private String remarks;
+	
+
+	@Column(name = "SequenceNo")
+	private String sequenceNo;
+
+	public String getSequenceNo() {
+		return sequenceNo;
+	}
+
+	public void setSequenceNo(String sequenceNo) {
+		this.sequenceNo = sequenceNo;
+	}
 
 	public String getRefNo() {
 		return refNo;
@@ -78,6 +90,14 @@ public class Order implements Serializable {
 
 	public void setRefNo(String refNo) {
 		this.refNo = refNo;
+	}
+
+	public Date getCompletionDate() {
+		return completionDate;
+	}
+
+	public void setCompletionDate(Date completionDate) {
+		this.completionDate = completionDate;
 	}
 
 	public Order() {
@@ -92,7 +112,7 @@ public class Order implements Serializable {
 	}
 
 	public Date getDelieveryDate() {
-		return this.delieveryDate;
+		return this.completionDate;
 	}
 
 	public Date getEstimatedDate() {
@@ -124,7 +144,7 @@ public class Order implements Serializable {
 	}
 
 	public void setDelieveryDate(Date delieveryDate) {
-		this.delieveryDate = delieveryDate;
+		this.completionDate = delieveryDate;
 	}
 
 	public void setEstimatedDate(Date estimatedDate) {

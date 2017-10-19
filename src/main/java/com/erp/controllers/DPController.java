@@ -1,7 +1,9 @@
 package com.erp.controllers;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.erp.classes.Constants;
 import com.erp.classes.DailyProduction;
 import com.erp.classes.Department;
 import com.erp.classes.DeptOperationDetails;
@@ -28,6 +31,7 @@ import com.erp.services.OrderService;
 
 @Controller
 public class DPController {
+	Constants constant;
 
 	@Autowired
 	private DailyProductionService service;
@@ -55,18 +59,19 @@ public class DPController {
 	@GetMapping("/NewDP")
 	public String DailyProductionHome(Model model) {
 		selectedODList = new ArrayList<OrderDetail>();
-		operationListCounter=0;
+		operationListCounter = 0;
 		ODListCounter = 0;
 		selectedOperationsList = new ArrayList<DeptOperationDetails>();
 		model.addAttribute("OIP", new OperationInProgress());
 		model.addAttribute("DP", new DailyProduction());
 		model.addAttribute("orderList", getOrderList());
 		model.addAttribute("deptList", getDepartment());
+
 		return "DailyProduction";
 	}
 
 	@PostMapping("DP/save")
-	public String  save(@RequestBody String[] dataList) {
+	public String save(@RequestBody String[] dataList) {
 		OrderDetail OD = new OrderDetail();
 		DailyProduction DP = new DailyProduction();
 		// OperationInProgress OIP = new OperationInProgress();
@@ -74,7 +79,7 @@ public class DPController {
 		OIPList = getAll();
 		for (String data : dataList) {
 			String[] result = data.split(",");
-			
+
 			int operationIndex = Integer.parseInt(result[0]);
 			int productIndex = Integer.parseInt(result[1]);
 
@@ -94,11 +99,11 @@ public class DPController {
 
 			for (OperationInProgress OIP : OIPList) {
 
-				if (OIP.getOrderDetail().getOrdDetail_ID() == OD.getOrdDetail_ID() && OIP.getDeptOD_ID()
+				if (OIP.getOrderDetail().getOrdDetail_ID() == OD.getOrdDetail_ID() && OIP.getDeptOD()
 						.getDeptOD_ID() == selectedOperationsList.get(operationIndex).getDeptOD_ID()) {
-					DP.setOIP_ID(OIP);
-
+					DP.setOIP(OIP);
 					service.save(DP);
+					updateOIPEnddate(OIP, OD.getQuantity(), DP.getDailyProduction());
 
 				}
 
@@ -107,14 +112,42 @@ public class DPController {
 		}
 		return "redirect:/NewDP";
 	}
-	
-	
-	@GetMapping("")
+
+	private void updateOIPEnddate(OperationInProgress oIP, double quantity, double dailyProduction) {
+		double quantityRemaining = quantity - dailyProduction;
+		double avgProduction = oIP.getDeptOD().getBaseProduction();
+		int remaining = (int) (quantityRemaining / avgProduction);
+
+		if (remaining >= 0) {
+			
+			Long expectedDate = addDays(remaining);
+			java.sql.Date endDate = new java.sql.Date(expectedDate);
+
+			oIP.setExpectedEndDate(endDate);
+			oIP.setStatus(constant.inProgress);
+			oIP.getOrderDetail().setExpectedEndDate(endDate);
+			oIP.getOrderDetail().getOrder().setEstimatedDate(endDate);
+			
+			OIPService.save(oIP);
+			orderDetailService.save(oIP.getOrderDetail());
+			orderSrvice.save(oIP.getOrderDetail().getOrder());
+		}
+
+	}
+
+	// utility functions
+	public Long addDays(int days) {
+		Date OIPDate = new Date(System.currentTimeMillis());
+		GregorianCalendar cal = new GregorianCalendar();
+		cal.add(Calendar.DATE, days);
+
+		return cal.getTimeInMillis();
+	}
 
 	@PostMapping("getProductDetail")
 	public @ResponseBody double[] getQuantity(@RequestBody String data) {
 		String[] requestData = data.split("!");
-		double[] result = new double[2];
+		double[] result = new double[3];
 		OrderDetail OD = new OrderDetail();
 
 		OD = selectedODList.get(Integer.parseInt(requestData[0]));
@@ -124,11 +157,14 @@ public class DPController {
 		result[0] = OD.getQuantity();
 
 		for (OperationInProgress OIP : OIPList) {
-			if (OIP != null && DeptOD.getDeptOD_ID() == OIP.getDeptOD_ID().getDeptOD_ID()) {
+			if (OIP != null && DeptOD.getDeptOD_ID() == OIP.getDeptOD().getDeptOD_ID()) {
 				result[1] = OIP.getInitialCloth();
+				result[2] = service.getClosingStock(OIP);
+				break;
 			}
 		}
-
+		if (result[2] == 0)
+			result[2] = result[1]; // if Closing balance is 0 assign initial cloth value
 		return result;
 	}
 

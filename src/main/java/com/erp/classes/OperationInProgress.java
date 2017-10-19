@@ -1,6 +1,7 @@
 package com.erp.classes;
 
 import java.io.Serializable;
+import java.sql.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,7 +18,7 @@ public class OperationInProgress implements Serializable {
 
 	@ManyToOne
 	@JoinColumn(name = "DeptOD_ID")
-	private DeptOperationDetails DeptOD_ID;
+	private DeptOperationDetails deptOD;
 	
 	@ManyToOne
 	@JoinColumn(name = "OrderDetail_ID")
@@ -30,8 +31,17 @@ public class OperationInProgress implements Serializable {
 	@Column(name = "InitialCloth")
 	private double InitialCloth;
 	
+	public void setOIP_ID(int oIP_ID) {
+		OIP_ID = oIP_ID;
+	}
+
 	@Column(name = "Status")
 	private String status;
+	
+	
+
+	@Column(name = "ExpectedEndDate")
+	private Date expectedEndDate;
 
 	@Id
 	@TableGenerator(
@@ -51,6 +61,14 @@ public class OperationInProgress implements Serializable {
 		return OIP_ID;
 	}
 
+	public Date getExpectedEndDate() {
+		return expectedEndDate;
+	}
+
+	public void setExpectedEndDate(Date expectedEndDate) {
+		this.expectedEndDate = expectedEndDate;
+	}
+
 	public String getStatus() {
 		return status;
 	}
@@ -66,8 +84,8 @@ public class OperationInProgress implements Serializable {
 		
 	}
 
-	public DeptOperationDetails getDeptOD_ID() {
-		return DeptOD_ID;
+	public DeptOperationDetails getDeptOD() {
+		return deptOD;
 	}
 
 	public double getInitialCloth() {
@@ -90,8 +108,8 @@ public class OperationInProgress implements Serializable {
 		return TotalUsedCloth;
 	}
 
-	public void setDeptOD_ID(DeptOperationDetails deptOD_ID) {
-		DeptOD_ID = deptOD_ID;
+	public void setDeptOD(DeptOperationDetails deptOD) {
+		this.deptOD = deptOD;
 	}
 
 	public void setInitialCloth(double initialCloth) {

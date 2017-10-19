@@ -75,7 +75,7 @@ public class OIPController {
 		if (OIP != null) {
 			;
 			OIP.setOrderDetail(selectedODList.get(Integer.parseInt(OIP.getOrderDetail().getRemarks())));
-			OIP.setDeptOD_ID(selectedOperationsList.get(Integer.parseInt(OIP.getDeptOD_ID().getName())));
+			OIP.setDeptOD(selectedOperationsList.get(Integer.parseInt(OIP.getDeptOD().getName())));
 
 			service.save(OIP);
 		}

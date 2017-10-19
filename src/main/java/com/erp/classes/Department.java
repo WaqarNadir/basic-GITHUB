@@ -36,6 +36,16 @@ public class Department implements Serializable {
 
 	@Column(name = "Name")
 	private String name;
+	@Column(name = "EstimatedCompletionTime",nullable=true)
+	private double estimatedCompletionTime;
+
+	public double getEstimatedCompletionTime() {
+		return estimatedCompletionTime;
+	}
+
+	public void setEstimatedCompletionTime(double estimatedCompletionTime) {
+		this.estimatedCompletionTime = estimatedCompletionTime;
+	}
 
 	@Column(name = "Remarks")
 	private String remarks;

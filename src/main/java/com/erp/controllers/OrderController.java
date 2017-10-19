@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import com.erp.classes.Constants;
 import com.erp.classes.Department;
 import com.erp.classes.DeptOperationDetails;
 import com.erp.classes.OperationInProgress;
@@ -68,7 +69,7 @@ public class OrderController {
 	Product selectedProduct;
 	Order savedOrder;
 	DecimalFormat formatter = new DecimalFormat("00");
-	
+	Constants constant;
 
 	// ----------------------
 	@Autowired
@@ -80,6 +81,9 @@ public class OrderController {
 
 	List<DeptOperationDetails> operationsList;
 	List<OperationInProgress> OIPList;
+	
+	
+	
 
 	@GetMapping(value = "/NewOrder")
 	public String NewOrder(Model model, HttpSession session) {
@@ -111,8 +115,9 @@ public class OrderController {
 		savedOrder = new Order();
 		savedOrder.setLotNo(getLotNo());
 		savedOrder.setDate(orderDate);
-		savedOrder.setOrderStatus("open");
+		savedOrder.setOrderStatus(constant.open);
 		savedOrder.setPerson(person);
+		savedOrder.setRefNo(getRefNo());
 
 		for (int i = 0; i < data.getOrderDetail().size(); i++) {
 			String selectedProduct = data.getProduct().get(i);
@@ -167,15 +172,35 @@ public class OrderController {
 		Department dept = DeptService.findByName("Printing").get(0);
 		operationsList = operationService.findByDept(dept);
 		operationsList.sort(Comparator.comparing(DeptOperationDetails::getColor));
-		
+
 		for (DeptOperationDetails deptOD : operationsList) {
 			if (deptOD != null && deptOD.getColor() >= Integer.parseInt(color)) {
 				String formattedValue = formatter.format(deptOD.getColor());
-				result.add( formattedValue +" Colors | "+deptOD.getName());
+				result.add(formattedValue + " Colors " + "|" + " " + deptOD.getName());
 			}
 		}
 
 		return result;
+
+	}
+
+	@PostMapping(value = "getEndDate")
+	public @ResponseBody String[] getEndDate(@RequestBody String machineName) {
+		String[] result = new String[3];
+		for (DeptOperationDetails deptOD : operationsList) {
+			if (deptOD.getName().equalsIgnoreCase(machineName)) {
+				
+				OIPList = OIPservice.findByDeptODAndStatus(deptOD,constant.inProgress);
+				for(OperationInProgress OIP : OIPList){
+					result[0] = OIP.getExpectedEndDate().toString();
+					result[1] = OIP.getOrderDetail().getOrder().getRefNo();
+					return result;
+				}
+				
+			}
+		}
+
+		return null;
 
 	}
 
@@ -221,6 +246,7 @@ public class OrderController {
 		return productlist;
 	}
 
+	//order related
 	public String getLotNo() {
 
 		String lotNo = "LN-01" + String.format("%05d", (getOrderID() + 1));
@@ -241,5 +267,18 @@ public class OrderController {
 		orderID = orderService.lastPKValue();
 		return orderID;
 	}
-
+//OIP related
+	public void computeEstimateDate() {
+//	OIPList.clear();
+//	OIPList.
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	
 }

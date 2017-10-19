@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.erp.classes.DailyProduction;
+import com.erp.classes.OperationInProgress;
 import com.erp.repo.DailyProductionRepo;
 
 @Service
@@ -42,6 +44,21 @@ public class DailyProductionService {
 		repo.findAll().forEach(dailyProductionList::add);
 		return dailyProductionList;
 
+	}
+
+	public List<DailyProduction> findByOIP(OperationInProgress oip) {
+
+		return repo.findByOIP(oip);
+	}
+
+	public double getClosingStock(OperationInProgress oip) {
+		dailyProductionList.clear();
+		double closingStock = 0;
+		dailyProductionList = repo.LatestClosingStock(oip, new PageRequest(0, 1));
+		if (!dailyProductionList.isEmpty())
+			closingStock = dailyProductionList.get(0).getClosingStock();
+
+		return closingStock;
 	}
 
 }

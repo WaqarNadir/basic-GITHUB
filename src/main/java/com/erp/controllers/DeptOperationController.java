@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.classes.Constants;
 import com.erp.classes.Department;
 import com.erp.classes.DeptOperationDetails;
 import com.erp.services.DepartmentService;
@@ -31,6 +32,7 @@ public class DeptOperationController {
 
 	List<Department> DeptList = null;
 	List<DeptOperationDetails> DeptOPList = null;
+	Constants constant;
 
 	@RequestMapping("/DeptOP")
 	public String home(Model model) {
@@ -50,8 +52,11 @@ public class DeptOperationController {
 
 		DeptOP.setDept(dept);
 		service.save(DeptOP);
-		model.addAttribute("deptOPList", service.getAll());
+		dept.setEstimatedCompletionTime(DeptEstimatePerUnit(dept));
+		System.err.println(DeptEstimatePerUnit(dept)*10000);
+		Deptservice.save(dept);
 
+		model.addAttribute("deptOPList", service.getAll());
 		return "ViewAllOperations";
 
 	}
@@ -75,28 +80,28 @@ public class DeptOperationController {
 		return DeptOPList;
 	}
 
-//	@RequestMapping(method = RequestMethod.POST, value = "/NewDeptOP")
-//	public void save(@RequestBody DeptOperationDetails DeptOperationDetails) {
-//		service.save(DeptOperationDetails);
-//
-//	}
-//
-//	@RequestMapping(method = RequestMethod.PUT, value = "/UpdateDeptOP/{id}")
-//	public void update(@RequestBody DeptOperationDetails DeptOperationDetails, @PathVariable int id) {
-//		service.update(id, DeptOperationDetails);
-//
-//	}
-//
-//	@RequestMapping(method = RequestMethod.DELETE, value = "/DeptOP/{id}")
-//	public void delete(@PathVariable int id) {
-//		service.delete(id);
-//
-//	}
-//
-//	@RequestMapping(method = RequestMethod.GET, value = "/DeptOP/{id}")
-//	public DeptOperationDetails GetDeptOP(@PathVariable int id) {
-//		return service.find(id);
-//
-//	}
+	public double DeptEstimatePerUnit(Department dept) {
+		List<DeptOperationDetails> deptOD = new ArrayList<DeptOperationDetails>();
+		List<Double> dayPerOperation = new ArrayList<>();
+		double totalDays = 0;
+		if (!dept.getName().equals("Printing")) {
+			// printing dept not follow any sequence
+			deptOD = service.findByDept(dept);
 
+			deptOD = service.findByDept(dept);
+			for (DeptOperationDetails operation : deptOD) {
+				double dayPerUnit = constant.deptUnit / operation.getBaseProduction();
+				dayPerOperation.add(dayPerUnit);
+				totalDays += dayPerUnit;
+			}
+		} // if
+System.err.println("in function estimate date");
+		return totalDays;
+
+		// value checker
+		// for(Department odept : getAll()) {
+		// System.out.println(odept.getName()+" : "+DeptEstimatePerUnit(odept)*10000);
+		// }
+
+	}
 }
