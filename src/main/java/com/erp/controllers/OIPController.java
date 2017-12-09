@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.erp.classes.DailyProduction;
 import com.erp.classes.Department;
@@ -42,21 +43,20 @@ public class OIPController {
 	private DepartmentService deptService;
 	@Autowired
 	private DeptOperationService deptOPService;
-	@Autowired
-	private OperationInProgessService OIPService;
 
 	List<Order> orderList = null;
 	List<OrderDetail> selectedODList;
-	int ODListCounter = 0;
-	List<Department> DeptList;
 	List<DeptOperationDetails> selectedOperationsList;
-	int operationListCounter = 0;
+	// int ODListCounter = 0;
+	List<Department> DeptList;
+
+	// int operationListCounter = 0;
 
 	@GetMapping("NewOIP")
 	public String home(Model model) {
 		selectedODList = new ArrayList<OrderDetail>();
-		ODListCounter = 0;
-		operationListCounter = 0;
+		// ODListCounter = 0;
+		// operationListCounter = 0;
 		selectedOperationsList = new ArrayList<DeptOperationDetails>();
 		model.addAttribute("OIP", new OperationInProgress());
 		model.addAttribute("orderList", getOrderList());
@@ -67,15 +67,17 @@ public class OIPController {
 
 	@GetMapping("ReportDP")
 	public String abc(Model model) {
-			return "ReportDP";
+		return "ReportDP";
 	}
 
 	@PostMapping("OIP/save")
 	public String save(@ModelAttribute("OIP") OperationInProgress OIP) {
 		if (OIP != null) {
-			;
-			OIP.setOrderDetail(selectedODList.get(Integer.parseInt(OIP.getOrderDetail().getRemarks())));
-			OIP.setDeptOD(selectedOperationsList.get(Integer.parseInt(OIP.getDeptOD().getName())));
+			OrderDetail OD = getFromSelectedOrderList(Integer.parseInt(OIP.getOrderDetail().getRemarks()));
+
+			OIP.setOrderDetail(OD);
+			OIP.setDeptOD(getFromSelectedOperationList(Integer.parseInt(OIP.getDeptOD().getName())));
+			OIP.setExpectedEndDate(OD.getExpectedEndDate());
 
 			service.save(OIP);
 		}
@@ -83,15 +85,35 @@ public class OIPController {
 	}
 
 	@PostMapping("OIP/operationList")
-	public @ResponseBody List<String> getOperations(@RequestBody int id) {
+	public @ResponseBody List<String> getOperations(@RequestBody String data) {
+		// operationListCounter = selectedOperationsList.size();
+		String[] input = data.split(",");
+		int id = Integer.parseInt(input[0]);
+		int orderID = Integer.parseInt(input[1]);
+		String prodName = input[2].trim();
 
 		Department dept = deptService.find(id);
-
 		List<String> operations = new ArrayList<String>();
-		for (DeptOperationDetails deptOP : deptOPService.findByDept(dept)) {
-			selectedOperationsList.add(operationListCounter, deptOP);
-			operations.add(deptOP.getName() + "," + operationListCounter);
-			operationListCounter++;
+
+		if (dept.getName().equals("Printing")) {
+			for (OrderDetail OD : selectedODList) {
+				if (OD.getProdDetail().getProduct().getName().equals(prodName)
+						&& OD.getOrder().getOrder_ID() == orderID) {
+					DeptOperationDetails deptOP = deptOPService.find(OD.getMachineID());
+					operations.add(deptOP.getName() + "," + deptOP.getDeptOD_ID());
+					// operationListCounter++;
+					selectedOperationsList.add(deptOP);
+				}
+
+			}
+		} else {
+
+			for (DeptOperationDetails deptOP : deptOPService.findByDept(dept)) {
+				selectedOperationsList.add(deptOP);
+				operations.add(deptOP.getName() + "," + deptOP.getDeptOD_ID());
+				// operationListCounter++;
+			}
+
 		}
 		return operations;
 	}
@@ -102,7 +124,6 @@ public class OIPController {
 
 		Order order = getOrder(orderID);
 
-		// this list will duplicate value . should check from selected list first
 		List<OrderDetail> orderDetail = new ArrayList<OrderDetail>();
 		orderDetail = orderDetailService.findByOrder(order);
 
@@ -113,8 +134,8 @@ public class OIPController {
 				// + " | " + OD.get(i).getProdDetail().getDesignNo() + " | "
 						+ " | " + OD.getProdDetail().getColor());
 
-				selectedODList.add(ODListCounter, OD);
-				ODListCounter++;
+				selectedODList.add(OD);
+				// ODListCounter++;
 
 			} // will pass lotno , index to get value later and
 
@@ -122,6 +143,40 @@ public class OIPController {
 
 		return result;
 		// must return string
+	}
+
+	@PostMapping("/example-url")
+	public ModelAndView example(@RequestBody Integer ID) {
+
+		ModelAndView view = new ModelAndView("OIPFragments  :: ProductDetail");
+		Order order = getOrder(ID);
+
+		List<OrderDetail> orderDetailList = new ArrayList<OrderDetail>();
+		orderDetailList = orderDetailService.findByOrder(order);
+		selectedODList.addAll(orderDetailList);
+		view.addObject("orderDetailList", orderDetailList);
+
+		return view;
+	}
+
+	private OrderDetail getFromSelectedOrderList(int id) {
+
+		for (OrderDetail OD : selectedODList) {
+			if (OD.getOrdDetail_ID() == id) {
+				return OD;
+			}
+		}
+		return null;
+	}
+
+	private DeptOperationDetails getFromSelectedOperationList(int id) {
+
+		for (DeptOperationDetails DeptOD : selectedOperationsList) {
+			if (DeptOD.getDeptOD_ID() == id) {
+				return DeptOD;
+			}
+		}
+		return null;
 	}
 
 	public List<Order> getOrderList() {

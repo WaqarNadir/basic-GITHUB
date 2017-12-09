@@ -54,15 +54,12 @@ public class ProductDetail implements Serializable {
 	}
 	
 
-	public ProductDetail(String remarks, String imgPath, String designNo, String color, Integer isScrap,
-			Product prod_ID ) {
+	public ProductDetail(String designNo, String color,
+			Product product ) {
 		super();
-		Remarks = remarks;
-		ImgPath = imgPath;
 		DesignNo = designNo;
 		Color = color;
-		IsScrap = isScrap;
-		product = prod_ID;
+		this.product = product ;
 		
 	}
 

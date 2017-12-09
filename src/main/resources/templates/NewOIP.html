@@ -4,94 +4,116 @@
 <div th:replace="template:: head"></div>
 
 <body class="hold-transition skin-blue sidebar-mini" onload="init()">
-	<script th:inline="javascript">
-		function init() {
-			$('#orderID').append(
-					$("<option></option>").attr("value", "999").text(
-							"Please Select"));
-			$('#orderID').val(999);
-		}
+	<th:block th:fragment="script">
+		<script th:inline="javascript">
+			function init() {
+				$('#orderID').append(
+						$("<option></option>").attr("value", "999").text(
+								"Please Select"));
+				$('#orderID').val(999);
+			}
 
-		function getProductList() {
-			var orderID = $("#orderID").val();
-			//	send("/productList",orderID);
+			function getProduct() {
+				
+				var orderID = parseInt($("#orderID").val());
+				$.ajax({
+					url : "/example-url",
+					contentType : "application/json; charset=utf-8",
+					data : JSON.stringify(orderID),
+					type : "POST",
+					success : function(data) {
+						$('#Product').html('');
+						$('#Product').html(data);
 
-			$.ajax({
-				url : "OIP/productList",
-				contentType : "application/json; charset=utf-8",
-				data : JSON.stringify(orderID),
-				type : "POST",
-				success : function(prodType) {
-					$('#product').empty();
-					$.each(prodType, function(key, value, dropDown) {
+					}
+				})
+			}
 
-						$('#product').append(
-								$("<option></option>").attr("value", key).text(
-										value));
-					});
+			function getProductList() {
+				var orderID = $("#orderID").val();
+				//	send("/productList",orderID);
 
-				},
-				error : function(xhr, status, error) {
-					alert("ERROR:" + xhr.responseText);
-					console.log("ERROR:" + xhr.responseText);
-				}
-			});
+				$.ajax({
+					url : "OIP/productList",
+					contentType : "application/json; charset=utf-8",
+					data : JSON.stringify(orderID),
+					type : "POST",
+					success : function(prodType) {
+						$('#product').empty();
+						$.each(prodType, function(key, value, dropDown) {
 
-		}
+							$('#product').append(
+									$("<option></option>").attr("value", key)
+											.text(value));
+						});
 
-		function getOperations() {
-			var Dept = $("#department").val();
+					},
+					error : function(xhr, status, error) {
+						alert("ERROR:" + xhr.responseText);
+						console.log("ERROR:" + xhr.responseText);
+					}
+				});
 
-			//	send("/operationList",Dept);
+			}
 
-			$.ajax({
-				url : "OIP/operationList",
-				contentType : "application/json; charset=utf-8",
-				data : JSON.stringify(Dept),
-				type : "POST",
-				success : function(prodType) {
-					$('#departmentOP').empty();
-					$.each(prodType, function(key, value) {
-						var result = value.split(',');
+			function getOperations() {
+				var dept = $("#department").val();
+				var orderID = $("#orderID").val();
+				var product = $('#product').find(":selected").text();
+				var productName = product.split("|");
 
-						$('#departmentOP').append(
-								$("<option></option>").attr("value", result[1])
-										.text(result[0]));
-					});
+				var data = dept + ',' + orderID + ',' + productName[0];
+				//	send("/operationList",Dept);
 
-				},
-				error : function(xhr, status, error) {
-					alert("ERROR:" + xhr.responseText);
-					console.log("ERROR:" + xhr.responseText);
-				}
-			});
+				$.ajax({
+					url : "OIP/operationList",
+					contentType : "application/json; charset=utf-8",
+					data : data,
+					type : "POST",
+					success : function(prodType) {
+						$('#departmentOP').empty();
+						$.each(prodType, function(key, value) {
+							var result = value.split(',');
 
-		}
-		function send(action, value) {
+							$('#departmentOP').append(
+									$("<option></option>").attr("value",
+											result[1]).text(result[0]));
+						});
 
-			// 	$.ajax({
-			// 		url : action,
-			// 		 contentType: "application/json; charset=utf-8",
-			// 		data :JSON.stringify(value),
-			// 		type : "POST",
-			// 		success : function(prodType) {
-			// 	    	$.each(prodType, function(key, value,dropDown) {
+					},
+					error : function(xhr, status, error) {
+						alert("ERROR:" + xhr.responseText);
+						console.log("ERROR:" + xhr.responseText);
+					}
+				});
 
-			// 	    	     $(dropDown)
-			// 	    	         .append($("<option></option>")
-			// 	    	                    .attr("value",key)
-			// 	    	                    .text(value)); 
-			// 	    	});
+			}
+			function send(action, value) {
 
-			//         },
-			// 		error : function(xhr, status, error) {
-			// 			alert("ERROR:"+xhr.responseText);
-			// 			console.log("ERROR:"+xhr.responseText);
-			// 		}	
-			// 	});
+				// 	$.ajax({
+				// 		url : action,
+				// 		 contentType: "application/json; charset=utf-8",
+				// 		data :JSON.stringify(value),
+				// 		type : "POST",
+				// 		success : function(prodType) {
+				// 	    	$.each(prodType, function(key, value,dropDown) {
 
-		}
-	</script>
+				// 	    	     $(dropDown)
+				// 	    	         .append($("<option></option>")
+				// 	    	                    .attr("value",key)
+				// 	    	                    .text(value)); 
+				// 	    	});
+
+				//         },
+				// 		error : function(xhr, status, error) {
+				// 			alert("ERROR:"+xhr.responseText);
+				// 			console.log("ERROR:"+xhr.responseText);
+				// 		}	
+				// 	});
+
+			}
+		</script>
+	</th:block>
 
 	<div th:replace="template:: wrapper"></div>
 	<div class="content-wrapper">
@@ -105,12 +127,11 @@
 
 			<div class="row">
 				<div class="col-md-offset-4 col-md-6">
-					<form class="form-horizontal" action="OIP/save" method="post"
-						>
+					<form class="form-horizontal" action="OIP/save" method="post">
 
 						<div class="row" id="Section1.row5">
 							<div class="col-md-1">
-								<label class="control-label col-sm-2" for="nam">Order
+								<label class="control-label col-md-2" for="nam">Order
 									ID:</label>
 							</div>
 							<div class="col-md-offset-1 col-md-8">
@@ -122,14 +143,15 @@
 							</div>
 						</div>
 						<br />
-						<div class="row" id="Section1.row5">
+						<div class="row" id="Product">
 							<div class="col-md-1">
-								<label class="control-label col-sm-2" for="nam">Product
+								<label class="control-label col-md-2" for="nam">Product
 									Name:</label>
 							</div>
 							<div class="col-md-offset-1 col-md-8">
 								<select th:name="product" th:id="product" class="form-control"
-									th:field="${OIP.orderDetail.remarks}">
+									th:field="${OIP.orderDetail.remarks}"
+									onchange="getAssignedMachine()">
 									<option value="0">Please Select</option>
 								</select>
 							</div>
@@ -138,7 +160,7 @@
 
 						<div class="row" id="Section1.row5">
 							<div class="col-md-1">
-								<label class="control-label col-sm-2" for="nam">Department:</label>
+								<label class="control-label col-md-2" for="nam">Department:</label>
 							</div>
 							<div class="col-md-offset-1 col-md-8">
 								<select th:name="department" class="form-control"
@@ -152,7 +174,7 @@
 
 						<div class="row" id="Section1.row5">
 							<div class="col-md-1">
-								<label class="control-label col-sm-2" for="nam">DepartmentOperation
+								<label class="control-label col-md-2" for="nam">DepartmentOperation
 									:</label>
 							</div>
 							<div class="col-md-offset-1 col-md-8">
@@ -165,10 +187,11 @@
 						<br />
 						<div class="row" id="Section1.row5">
 							<div class="col-md-1">
-								<label class="control-label col-sm-2" for="nam">Status:</label>
+								<label class="control-label col-md-2" for="nam">Status:</label>
 							</div>
 							<div class="col-md-offset-1 col-md-8">
-								<select class="form-control" id="Status" th:field ="${OIP.status}">
+								<select class="form-control" id="Status"
+									th:field="${OIP.status}">
 									<option value="0">Please Select</option>
 									<option value="Active">Active</option>
 									<option value="Inactive">Inactive</option>
@@ -181,7 +204,7 @@
 
 						<div class="row" id="Section1.row1">
 							<div class="col-md-1">
-								<label class="control-label col-sm-2" for="Remark">Initial
+								<label class="control-label col-md-2" for="Remark">Initial
 									Cloth:</label>
 							</div>
 							<div class="col-md-offset-1 col-md-8">
@@ -196,13 +219,19 @@
 						<div class="form-group">
 							<div class="col-sm-offset-2 col-sm-10">
 								<br />
-								<button type="submit" onclick="redirect()" class="btn btn-default col-md-offset-1">Submit</button>
+								<button type="submit" onclick="redirect()"
+									class="btn btn-default col-md-offset-1">Submit</button>
+
+								<button type="button" onclick="getProduct()"
+									class="btn btn-default col-md-offset-1">click me</button>
+								<div id="substeps"></div>
 								<script>
-								function redirect(){
-									 window.location.href  ="/DailyProduction";
-								}</script>
+									function redirect() {
+										window.location.href = "/DailyProduction";
+									}
+								</script>
 							</div>
-							
+
 						</div>
 					</form>
 				</div>

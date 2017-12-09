@@ -29,7 +29,7 @@ public class Product implements Serializable {
 	private int parentRef;
 
 	
-	private BigDecimal price;
+	private double price;
 
 	
 	private Integer prod_ID;
@@ -45,6 +45,17 @@ public class Product implements Serializable {
 
 	
 	private String UOM;
+	
+	
+	public Integer getIsFinal() {
+		return isFinal;
+	}
+
+	public void setIsFinal(Integer isFinal) {
+		this.isFinal = isFinal;
+	}
+
+	private Integer isFinal;
 
 	public Product() {
 	}
@@ -59,7 +70,7 @@ public class Product implements Serializable {
 		return this.parentRef;
 	}
 	@Column(name = "Price")
-	public BigDecimal getPrice() {
+	public double getPrice() {
 		return this.price;
 	}
 
@@ -102,7 +113,7 @@ public class Product implements Serializable {
 		this.parentRef = parentRef;
 	}
 
-	public void setPrice(BigDecimal price) {
+	public void setPrice(double price) {
 		this.price = price;
 	}
 
@@ -131,6 +142,13 @@ public class Product implements Serializable {
 	public String toString() {
 		
 		return "Name = "+ this.getName() +"\n ParentRef="+this.getParentRef() +"\n Prod ID="+this.getProd_ID() +"\n ProdType= "+getProdType() +"\n Remarks= "+getRemarks()+"\n Supplier_ID="+getSupplier_ID()+"\n UOM = "+getUOM()+"\nPrice ="+getPrice();
+		
+	}
+
+	public Product(String name, Integer parentRef) {
+		super();
+		this.name = name;
+		this.parentRef = parentRef;
 		
 	}
 

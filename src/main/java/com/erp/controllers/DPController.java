@@ -55,6 +55,7 @@ public class DPController {
 	List<DeptOperationDetails> selectedOperationsList;
 	int operationListCounter = 0;
 	List<OperationInProgress> OIPList;
+	functions function;
 
 	@GetMapping("/NewDP")
 	public String DailyProductionHome(Model model) {
@@ -88,7 +89,7 @@ public class DPController {
 			double dailyProduction = Double.parseDouble(result[4]);
 			double closingStock = openingStock - dailyProduction;
 
-			Date date = functions.convertDate(result[6]);
+			Date date = functions.formatDate(result[6]);
 
 			OD = selectedODList.get(productIndex);
 			DP.setOpeningStock(openingStock);
@@ -119,15 +120,14 @@ public class DPController {
 		int remaining = (int) (quantityRemaining / avgProduction);
 
 		if (remaining >= 0) {
-			
-			Long expectedDate = addDays(remaining);
-			java.sql.Date endDate = new java.sql.Date(expectedDate);
-
+			java.sql.Date endDate = function.addDays(remaining, null);
 			oIP.setExpectedEndDate(endDate);
-			oIP.setStatus(constant.inProgress);
-			oIP.getOrderDetail().setExpectedEndDate(endDate);
-			oIP.getOrderDetail().getOrder().setEstimatedDate(endDate);
+			oIP.setStatus(Constants.inProgress);
 			
+			oIP.getOrderDetail().setExpectedEndDate(endDate);
+			oIP.getOrderDetail().getOrder().setOrderStatus(Constants.inProgress);
+			oIP.getOrderDetail().getOrder().setEstimatedDate(endDate);
+
 			OIPService.save(oIP);
 			orderDetailService.save(oIP.getOrderDetail());
 			orderSrvice.save(oIP.getOrderDetail().getOrder());
@@ -136,18 +136,11 @@ public class DPController {
 	}
 
 	// utility functions
-	public Long addDays(int days) {
-		Date OIPDate = new Date(System.currentTimeMillis());
-		GregorianCalendar cal = new GregorianCalendar();
-		cal.add(Calendar.DATE, days);
-
-		return cal.getTimeInMillis();
-	}
 
 	@PostMapping("getProductDetail")
-	public @ResponseBody double[] getQuantity(@RequestBody String data) {
+	public @ResponseBody double[] getProductDetail(@RequestBody String data) {
 		String[] requestData = data.split("!");
-		double[] result = new double[3];
+		double[] result = new double[4];
 		OrderDetail OD = new OrderDetail();
 
 		OD = selectedODList.get(Integer.parseInt(requestData[0]));
@@ -160,6 +153,7 @@ public class DPController {
 			if (OIP != null && DeptOD.getDeptOD_ID() == OIP.getDeptOD().getDeptOD_ID()) {
 				result[1] = OIP.getInitialCloth();
 				result[2] = service.getClosingStock(OIP);
+				result[3]= getQuantityProduced(OIP);
 				break;
 			}
 		}
@@ -235,6 +229,14 @@ public class DPController {
 
 	public List<OperationInProgress> getAll() {
 		return OIPService.getAll();
+	}
+
+	public double getQuantityProduced(OperationInProgress OIP) {
+		double qunatityProduced = 0;
+		for (DailyProduction DP : service.findByOIP(OIP)) {
+			qunatityProduced += DP.getDailyProduction();
+		}
+		return qunatityProduced;
 	}
 
 }

@@ -20,6 +20,12 @@ public class OrderDetailService {
 
 	public void save(OrderDetail OrderDetail) {
 		repo.save(OrderDetail);
+		repo.flush();
+
+	}
+	
+	public void saveAndFlush(OrderDetail OrderDetail) {
+		repo.saveAndFlush(OrderDetail);
 
 	}
 
@@ -46,5 +52,10 @@ public class OrderDetailService {
 	public List<OrderDetail> findByOrder(Order order ) {
 		
 		return repo.findByOrder(order);
+	}
+	
+public List<OrderDetail> findByMachineID(int MachineID) {
+		
+		return repo.findByMachineID(MachineID);
 	}
 }

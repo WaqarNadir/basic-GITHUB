@@ -24,9 +24,12 @@ public class ProductService {
 	}
 
 	public List<Product> findAll() {
-		productlist.clear();
-		repo.findAll().forEach(productlist::add);
-		return productlist;
+		return repo.findAll();
+
+	}
+
+	public List<Product> findFinalProduct(int isFinal) {
+		return repo.findByIsFinal(isFinal);
 	}
 
 	public void save(Product product) {
@@ -44,6 +47,15 @@ public class ProductService {
 	public void delete(int id) {
 		// TODO Auto-generated method stub
 		repo.delete(id);
+
+	}
+
+	public int nextID() {
+		return 0;
+	}
+
+	public List<Product> findByParentRef(int prodID) {
+		return repo.findByParentRef(prodID);
 
 	}
 

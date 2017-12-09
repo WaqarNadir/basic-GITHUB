@@ -18,20 +18,27 @@
 				<table class="table table-striped">
 					<tbody>
 						<th>
-						<td>No.</td>
 						<td>Order No</td>
 						<td>Party Name</td>
 						<td>Status</td>
 						<td>Estimated Delievery Date</td>
+						<td>Sequence No.</td>
 						</th>
 
 						<tr th:each="order,iterStat : ${orderList}">
-						<td></td>
-							<td th:text="${iterStat.index}">...</td>
+							<td></td>
+
 							<td th:text="${order.order_ID}">...</td>
-							<td	th:text="${order.person.Fname+' ' +order.person.Lname}">...</td>
+							<td th:text="${order.person.Fname+' ' +order.person.Lname}">...</td>
 							<td th:text="${order.orderStatus}">...</td>
 							<td th:text="${order.estimatedDate}">...</td>
+							<td th:text="${iterStat.index + 1 }">...</td>
+							<td>
+								<button th:value="${order.order_ID}"
+									th:class="${iterStat.odd}? 'btn-primary' : 'btn-danger'">Move
+									Up</button>
+
+							</td>
 						</tr>
 
 					</tbody>

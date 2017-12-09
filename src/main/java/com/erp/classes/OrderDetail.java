@@ -39,6 +39,17 @@ public class OrderDetail implements Serializable {
 
 	@Column(name = "Quantity", nullable = true)
 	private double Quantity;
+	
+	@Column(name = "Machine_ID", nullable = true)
+	private int machineID;
+	
+	public int getMachineID() {
+		return machineID;
+	}
+
+	public void setMachineID(int machineID) {
+		this.machineID = machineID;
+	}
 
 	public Date getExpectedStartDate() {
 		return expectedStartDate;
@@ -111,6 +122,7 @@ public class OrderDetail implements Serializable {
 	public OrderDetail() {
 		// TODO Auto-generated constructor stub
 	}
+	
 
 	// -------------------------- setter ------------------------------------
 	public void setExpectedEndDate(Date expectedEndDate) {
@@ -144,4 +156,16 @@ public class OrderDetail implements Serializable {
 	public void setRemarks(String remarks) {
 		Remarks = remarks;
 	}
+
+	public OrderDetail(String construction, ProductDetail prodDetail,
+			double quantity, String remarks, 
+			int noOfColors) {
+		super();
+		Construction = construction;
+		this.prodDetail = prodDetail;
+		Quantity = quantity;
+		Remarks = remarks;
+		this.noOfColors = noOfColors;
+	}
+	
 }

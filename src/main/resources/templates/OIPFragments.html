@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:dt="http://www.thymeleaf.org/dandelion/datatables">
+<head>
+<meta charset="UTF-8" />
+<title>Title</title>
+
+</head>
+<body>
+	<div th:fragment="ProductDetail">
+		<div class="col-md-1">
+			<label class="control-label col-md-2" for="nam">Product Name:</label>
+		</div>
+		<div class="col-md-offset-1 col-md-8">
+			<select th:name="product" th:id="product" class="form-control">
+				<option value="0">Please Select</option>
+				<option th:each="item,RowNum : ${orderDetailList}"
+					th:value="${item.ordDetail_ID}"
+					th:text="${item.prodDetail.product.name
+					+ ' | ' + item.construction
+						+ ' | ' + item.prodDetail.color}"></option>
+			</select>
+		</div>
+	</div>
+</body>
+</html>

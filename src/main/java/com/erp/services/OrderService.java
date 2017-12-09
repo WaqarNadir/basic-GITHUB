@@ -18,6 +18,13 @@ public class OrderService {
 
 	public void save(Order Order) {
 		repo.save(Order);
+		
+
+	}
+	
+	public void saveAndFlush(Order Order) {
+		repo.saveAndFlush(Order);
+		
 
 	}
 
@@ -56,4 +63,5 @@ public class OrderService {
 		return repo.findByOrderStatus(orderStatus);
 		 
 	}
+	
 }

@@ -18,14 +18,7 @@ import javax.persistence.TableGenerator;
 @NamedQuery(name = "DailyProduction.LatestClosingStock", 
 query = "SELECT DP FROM DailyProduction DP where DP.oIP = :oip order by DP.date DESC ")
 public class DailyProduction implements Serializable {
-	public OperationInProgress getOIP() {
-		return oIP;
-	}
-
-	public void setOIP(OperationInProgress oIP) {
-		this.oIP = oIP;
-	}
-
+	
 	private static final long serialVersionUID = 1L;
 
 	
@@ -34,6 +27,15 @@ public class DailyProduction implements Serializable {
 	@ManyToOne(cascade=CascadeType.MERGE)
 	@JoinColumn(name ="OIP_ID")
 	private OperationInProgress oIP;
+	
+	public OperationInProgress getOIP() {
+		return oIP;
+	}
+
+	public void setOIP(OperationInProgress oIP) {
+		this.oIP = oIP;
+	}
+
 	
 	@Id
 	@TableGenerator(

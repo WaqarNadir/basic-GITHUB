@@ -1,6 +1,7 @@
 package com.erp.controllers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -53,7 +54,7 @@ public class DeptOperationController {
 		DeptOP.setDept(dept);
 		service.save(DeptOP);
 		dept.setEstimatedCompletionTime(DeptEstimatePerUnit(dept));
-		System.err.println(DeptEstimatePerUnit(dept)*10000);
+		System.err.println(DeptEstimatePerUnit(dept));
 		Deptservice.save(dept);
 
 		model.addAttribute("deptOPList", service.getAll());
@@ -75,12 +76,13 @@ public class DeptOperationController {
 	}
 
 	public List<DeptOperationDetails> getAll() {
-		if (DeptOPList == null)
 			DeptOPList = service.getAll();
 		return DeptOPList;
 	}
 
 	public double DeptEstimatePerUnit(Department dept) {
+		// this is currently computing date on parallel basis .2 operation will start when 1st completes all the production. 
+		
 		List<DeptOperationDetails> deptOD = new ArrayList<DeptOperationDetails>();
 		List<Double> dayPerOperation = new ArrayList<>();
 		double totalDays = 0;
@@ -88,14 +90,14 @@ public class DeptOperationController {
 			// printing dept not follow any sequence
 			deptOD = service.findByDept(dept);
 
-			deptOD = service.findByDept(dept);
+			checkduplicate(deptOD); 
 			for (DeptOperationDetails operation : deptOD) {
 				double dayPerUnit = constant.deptUnit / operation.getBaseProduction();
 				dayPerOperation.add(dayPerUnit);
 				totalDays += dayPerUnit;
 			}
 		} // if
-System.err.println("in function estimate date");
+		System.err.println("in function estimate date");
 		return totalDays;
 
 		// value checker
@@ -104,4 +106,23 @@ System.err.println("in function estimate date");
 		// }
 
 	}
+
+	public void checkduplicate(List<DeptOperationDetails> deptODList) {
+		HashMap<String, Double> map = new HashMap<String, Double>();
+
+		for (DeptOperationDetails dept : deptODList) {
+			String seqNo = "" + dept.getSequenceNo();
+			if (map.get(seqNo) != null) { // value already exist
+				double value = map.get(seqNo) + dept.getBaseProduction();
+				map.put(seqNo, value);
+			
+			} else {
+
+				map.put(seqNo, dept.getBaseProduction());
+
+			}
+		}
+
+	}
+
 }

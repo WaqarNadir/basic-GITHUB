@@ -5,15 +5,50 @@
 
 <script th:inline="javascript">
 
+function init(){
+		setDefaultValue('#prodType');
+		setDefaultValue('#prodName');
+		
+}
+
+
+function setDefaultValue(dropdown){
+	  $(dropdown).append(
+				$("<option></option>").attr("value", "999").text(
+						"Please Select"));
+	  $(dropdown).val(999);
+		
+}
+
+function ItemQuantity(quantity){
+	var prodType = $("#prodType").find(":selected").text();
+	var itemQuantity = (quantity/prodType).toFixed(2);;
+	
+	$("#itemQuantity1").val(itemQuantity);
+	$("#itemQuantity2").val(itemQuantity);
+	if(prodType == 3) 
+	$("#itemQuantity3").val(itemQuantity);
+	
+}
+
+
 $(document).ready(function() {
+	init();
 	
 	 orderID = /*[[${session.orderID}]]*/;
 	 lotNo = /*[[${session.lotNo}]]*/;
-	 
+	 currentDate = /*[[${session.currentDate}]]*/;
+	// $("#date").text(currentDate);
+	 $('#date').attr('value', currentDate);
 
 	 orderList = [];
 	prodList = [];
 	productList = [];
+	itemList =[];
+	kameez ="";
+	duppatta ="";
+	shalwar ="";
+	
 
 	$('#machineDetail').hide();
 	
@@ -38,7 +73,8 @@ function submitData(){
 			"orderDetail" :orderList,
 			"product" : productList,
 			"partyName" : partyName,
-			"date" : orderDate
+			"date" : orderDate,
+			"machineDetail": itemList
 	};
 	
 	
@@ -59,6 +95,7 @@ function submitData(){
 	});
 
 }
+
 function add(){
 	var orderDetail = {};
 
@@ -72,17 +109,19 @@ function add(){
 			"product" : product
 	}
 	
-	orderDetail.quantity = $("#Quantity").val();
+	orderDetail.quantity = $("#quantity").val();
 	orderDetail.construction = $("#Construction").val() ;
-	orderDetail.price = "123";
+	//orderDetail.price = "123";
 	orderDetail.remarks="remarks";
 	orderDetail.prodDetail = productDetail;
 	
 	var prodType=product.name + "/"+ product.prodType;
+	var items = shalwar+"," +  kameez+"," + duppatta;
 	
 	productList.push(prodType);
 	orderList.push(orderDetail);
 	prodList.push(productDetail);
+	itemList.push(items);
 	
 	var htmlrow ="<tr>"+
 	"<td>" + "</td>"+
@@ -96,13 +135,15 @@ function add(){
     $("#addProduct")[0].reset();
     $('#orderID').val(orderID);
 	$('#lotNo').val(lotNo);
+	$('#date').val(currentDate);
 }
 
 function onProductChange() {
 	var prodName=$('#prodName').val();
+		$('#prodType').empty();
 	
-
-	$('#prodType').empty();
+	 if(prodName == '999') 
+         return;
 
 	 $.ajax({
 		    type: "POST",
@@ -110,12 +151,18 @@ function onProductChange() {
 		    contentType: "application/json; charset=utf-8",
 		    url: "/getProdType?",
 		    success : function(prodType) {
+		    	setDefaultValue('#prodType');
+	    	    
 		    	$.each(prodType, function(key, value) {
-		    		 
-		    	     $('#prodType')
+		    		 $('#prodType')
 		    	         .append($("<option></option>")
 		    	                    .attr("value",key)
-		    	                    .text(value)); 
+		    	                    .text(value));
+		    		 
+		    		 if(value ==2)
+		    			 $('#rowDuppatta').hide();
+		    		 else
+		    			 $('#rowDuppatta').show();
 		    	});
 	          
 	        }
@@ -124,9 +171,9 @@ function onProductChange() {
 
 function getMachine(){
 	var colors=$('#noOfColor').val(); 
-	$('#machine').empty();
 	$('#machine1').empty();
 	$('#machine2').empty();
+	$('#machine3').empty();
 	 $.ajax({
 		    type: "POST",
 		    contentType: "application/json; charset=utf-8",
@@ -134,50 +181,167 @@ function getMachine(){
 		    url: "/getMachine",
 		    success : function(prodType) {
 		    	var counter =0;
+		    	 
+	    		 setDefaultValue('#machine1');
+	    		 setDefaultValue('#machine2');
+	    		 setDefaultValue('#machine3');
+	    		 
 		    	$.each(prodType, function(key, value) {
 		    		 counter++;
-		    	     $('#machine')
-		    	         .append($("<option></option>")
-		    	                    .attr("value",key)
-		    	                    .text(value)); 
-		    	     $('#machine1')
+		    	for( a=1; a != 4 ; a++){
+		    	var machine ="#machine" + a;
+		    		$(machine)
 	    	         .append($("<option></option>")
 	    	                    .attr("value",key)
 	    	                    .text(value)); 
-		    	     $('#machine2')
-	    	         .append($("<option></option>")
-	    	                    .attr("value",key)
-	    	                    .text(value)); 
+		    	}
+		    	     $('#SAssign').show();
+		    	     $('#KAssign').show();
+		    	     $('#DAssign').show();
 		    	});
 	          
 	        }
 	});
 };
 
-function getEndDate(machine){
+function getEndDate(machine,val){
 	var machineName =$(machine).find("option:selected").text();
 	var data = machineName.split("| ");
+	var itemQuantityField = '#itemQuantity'+val;
+	var quantity = $(itemQuantityField).val();
+	data[1] =data[1]+ "@"+quantity;
+	
+	var opEndDate = "#OperationEndDate"+val;
+	var itemEndDate = "#orderEndDate"+val;
 	
 	$.ajax({
 	    type: "POST",
 	    contentType: "application/json; charset=utf-8",
 	    data:data[1],
 	    url: "/getEndDate",
-	    success : function(result) {
-	    	if(!result[0]==""){
-	    	$('#machineDetail').show();
-	    	$('#OperationEndDate').val(result[0]);
-	    	$('#machineOrderID').val(result[1]);
- 	    	$('#orderInProgress1').text(result[1]);
- 	    	$('#orderInProgress2').text(machineName+" -   Currently busy in :    - "+result[1]); 	
-	    	}
-	    	else{
+	    success : function(output) {
+	    	if(output=="" || output==null){			// No result found
 	    		$('#machineDetail').hide();	
+	    		$(opEndDate).val("");
+		    	$(itemEndDate).val("");
+		    	$('#orderInProgress1').text("");
+	 	    	$('#orderInProgress2').text(""); 	
+		    	
+		    	
+		         return;
 	    	}
+	    	
+	    	$.each(output, function(key, result) {
+	     		inProgress = "In Progress";
+	    		open = "Open";
+	    		computedDate = result[2].split('/');
+	    		DaysToComplete = computedDate[0];
+	    		computedEndDate = computedDate[1];
+	    		
+	    		if(result[3]==open ){			// No result found
+		    		
+		    		$(opEndDate).val("");
+		    		$(itemEndDate).val(computedEndDate);
+		    		
+		    		$('#machineDetail').show();
+		 	    	$('#orderInProgress1').text("Need "+DaysToComplete+" Days To Complete." );
+		 	    	$('#orderInProgress2').text("" );
+		 	    	var msg = " Estimated Date if order start today <strong>" + computedEndDate +"</strong><br/>" ;
+		 	    				    	
+			         if(result[1]!="" || result[1]!=null){
+			        	 
+			        	 displayScheduled =true;
+			        	 msg = " Estimated Date if starts after Scheduled Order <strong>" + computedEndDate +"</strong><br/>" ;
+			 	    		
+			         }
+			         $('#orderInProgress2').append('<font color="yellow" size="3">  Machine is Free.</font> <br/>' + msg); 	
+				    	 return;
+		    	}	
+	    		
+	    	if(result[3]==inProgress){
+	    		
+	    	$('#machineDetail').show();
+	    	$(opEndDate).val(result[0]);
+	    	$(itemEndDate).val(computedEndDate);
+	    	
+ 	    	$('#orderInProgress1').text("Need "+DaysToComplete+" Days To Complete." );
+ 	   		$('#orderInProgress2').text("" );
+ 	    	$('#orderInProgress2').append(machineName+" - <strong>  Currently busy in :    - </strong> "+result[1] +"<br/>" ); 
+ 	    	displayScheduled =true;
+	    	}else{
+	    		if(displayScheduled){
+	    		$('#orderInProgress2').append("<h3> Scheduled Orders are :</h3> <br/>");
+	    		displayScheduled = false;
+	    		}
+	    		var scheduleOrder ="<strong>  " + result[1] + "</strong> " + " expected Order End date is : "+ "<strong> " + 
+	    		result[2] +"</strong> "  +"<br/>";
+	    		$('#orderInProgress2').append(scheduleOrder);	
+	    	}
+	    	
+	    	})
         }
 });
 	
 };
+
+function saveMachine(productItem){
+	 var machine = '#machine'+productItem;
+	var machineName =$(machine).find("option:selected").text();
+	var data = machineName.split("| ");
+	var opEndDate ="#OperationEndDate"+productItem;
+	var orderEndDate ="#orderEndDate"+productItem;
+
+	var itemDetail = $(opEndDate).val() + "~" + $(orderEndDate).val();
+
+	switch(productItem){
+	case 1:{
+		//shalwar
+		shalwar = data[1] +"~"+ itemDetail;
+		$('#SAssign').hide();	
+		break;
+	}
+	case 2:{
+		//kameez
+		kameez = data[1] +"~"+ itemDetail;
+		$('#KAssign').hide();	
+		break;
+	}
+	case 3:{
+		//duppatta
+		duppatta = data[1]+"~"+ itemDetail;
+		$('#DAssign').hide();	
+		break;
+	}
+	
+	};
+
+/* function getSubType(){
+	var product={
+			"name" : $("#prodName").find(":selected").text(),
+			"prodType" :  $("#prodType").find(":selected").text()
+		};
+	var prodType=product.name + "/"+ product.prodType;
+	$.ajax({
+	    type: "POST",
+	    contentType: "application/json; charset=utf-8",
+	    data:prodType,
+	    url: "/getSubType",
+	    success : function(result) {
+	    	$.each(result, function(key, value) {
+	    		var data = value.split(',');
+	    		
+	    	
+	    	}	
+	    	
+        }
+});
+} */
+
+
+		
+	
+}
+
 
 </script>
 
@@ -210,7 +374,8 @@ function getEndDate(machine){
 						<label for="date">Date:</label>
 					</div>
 					<div class="col-md-4">
-						<input type="date" name="date" th:id="date" th:name="date" />
+						<input type="date" name="date" th:id="date" th:name="date"
+							required="required" />
 					</div>
 				</div>
 				<div class="row">&nbsp;</div>
@@ -293,16 +458,12 @@ function getEndDate(machine){
 									th:name="noOfColor" onchange="getMachine()">
 									<option value='1'>1</option>
 									<option value='2'>2</option>
-									<option value="4">4</option>
-									<option value='4'>5</option>
-									<option value='5'>6</option>
-									<option value='6'>7</option>
-									<option value='7'>8</option>
-									<option value='8'>9</option>
-									<option value='9'>10</option>
-									<option value='10'>11</option>
-									<option value='11'>12</option>
-									<option value='12'>12</option>
+									<option value="3">3</option>
+									<option value='4'>4</option>
+									<option value='5'>5</option>
+									<option value='6'>6</option>
+									<option value='7'>7</option>
+									<option value='8'>8</option>
 								</select>
 							</div>
 
@@ -319,9 +480,10 @@ function getEndDate(machine){
 							</div>
 							<div class="col-md-2">
 								<input type="text" class="form-control"
-									th:field="${orderDetail.Quantity}" />
+									th:field="${orderDetail.Quantity}" th:id="quantity"
+									onchange="ItemQuantity(this.value)" />
 							</div>
-							<div class="col-md-1">
+							<!-- 		<div class="col-md-1">
 								<label for="date">UOM:</label>
 							</div>
 							<div class="col-md-2">
@@ -332,17 +494,115 @@ function getEndDate(machine){
 									<option value="other">Other</option>
 								</select>
 							</div>
+							
+							 -->
 
-						</div>
-						<div class="row text-center" id="Section2.row3">
-							<div class="col-md-12">
-								<br /> <input type="button" value="Add" id="Add"
-									onclick="add()" />
-							</div>
 						</div>
 						<!-- 					</form> -->
 						<hr />
-						<br />
+						<div class="content" id="Section4.row1">
+
+							<div class="box" id="DetailBox">
+								<div class="box-header center">
+									<h3 class="box-title">Item wise Details</h3>
+								</div>
+
+								<div class="box-header center">
+									<label id="orderExpectedEndDate"></label>
+								</div>
+
+
+								<div class="box-body no-padding">
+									<table class="table table-striped">
+
+										<tbody>
+											<th>Name</th>
+											<th>Machine</th>
+											<th>Machine Availability Date</th>
+											<th>Quantity</th>
+											<th>Expected Completion Date</th>
+											<tr>
+												<td>Shalwar</td>
+												<td><select class="form-control" id="machine1"
+													onchange='getEndDate(this,1)'>
+														<option value='99'> please select machine</option>
+
+												</select></td>
+												<td><input class="form-control" id="OperationEndDate1"
+													disabled="disabled" /></td>
+												<td><input class="form-control" id="itemQuantity1"
+													disabled="disabled" /></td>
+
+												<td><input class="form-control" id="orderEndDate1"
+													disabled="disabled" /></td>
+
+												<td><button type="button" id="SAssign"
+														onclick="saveMachine(1)">Assign</button></td>
+											</tr>
+											<tr>
+												<td>Kameez</td>
+												<td><select class="form-control" id="machine2"
+													onchange='getEndDate(this,2)'>
+														<option value='99'> please select machine</option>
+
+												</select></td>
+												<td><input id="OperationEndDate2" class="form-control"
+													disabled="disabled" /></td>
+												<td><input class="form-control" id="itemQuantity2"
+													disabled="disabled" /></td>
+
+												<td><input id="orderEndDate2" class="form-control"
+													disabled="disabled" /></td>
+												<td><button id="KAssign" type="button"
+														onclick="saveMachine(2)">Assign</button></td>
+											</tr>
+											<tr id="rowDuppatta">
+												<td>Duppatta</td>
+												<td><select class="form-control" id="machine3"
+													onchange='getEndDate(this,3)'>
+														<option value='99'> please select machine</option>
+
+												</select></td>
+												<td><input id="OperationEndDate3" class="form-control"
+													disabled="disabled" /></td>
+												<td><input class="form-control" id="itemQuantity3"
+													disabled="disabled" /></td>
+
+												<td><input class="form-control" id="orderEndDate3"
+													disabled="disabled" /></td>
+												<td><button id="DAssign" type="button"
+														onclick="saveMachine(3)">Assign</button></td>
+											</tr>
+
+										</tbody>
+									</table>
+
+								</div>
+								<br />
+								<div id="machineDetail" class="callout callout-success">
+									<h4 id="orderInProgress1"></h4>
+
+									<p id="orderInProgress2"></p>
+								</div>
+							</div>
+
+
+							<div class="row text-center" id="Section2.row3">
+
+								<br /> <input type="button" class="btn-lg btn-success"
+									value="Add" id="Add" onclick="add()" />
+
+							</div>
+
+						</div>
+
+
+					</div>
+
+					<div class="box">
+						<div class="box-header center">
+							<h3 class="box-title">Added Items</h3>
+						</div>
 
 						<!-- /.box-header -->
 						<div class="box-body no-padding">
@@ -355,98 +615,12 @@ function getEndDate(machine){
 										<th>Color</th>
 										<th>Construction</th>
 									</tr>
-									<tr>
-										<td>1.</td>
-										<td>Barkha Lawn</td>
-										<td>100 PCS</td>
-										<td>RED</td>
-										<td>64*64</td>
-									</tr>
-									<tr>
-										<td>2.</td>
-										<td>Sohni Lawn</td>
-										<td>1000 Meter</td>
-										<td>GREEN</td>
-										<td>64*64</td>
-									</tr>
 								</tbody>
 							</table>
 						</div>
 						<!-- /.box-body -->
 
 					</div>
-
-					<div class="content" id="Section4.row1">
-
-						<div class="box" id="DetailBox">
-							<div class="box-header center">
-								<h3 class="box-title">Item wise Details</h3>
-							</div>
-
-							<div class="box-header center">
-								<label id="orderExpectedEndDate"></label>
-							</div>
-
-
-							<div class="box-body no-padding">
-								<table class="table table-striped">
-
-									<tbody>
-										<th>Name</th>
-										<th>Machine</th>
-										<th>Machine Availability Date</th>
-										<th>Expected Completion Date</th>
-										<tr>
-											<td>Shalwar</td>
-											<td><select class="form-control" id="machine"
-												onchange='getEndDate(this)'>
-													<option value='99'> please select machine</option>
-
-											</select></td>
-											<td><input class="form-control" id="OperationEndDate"
-												disabled="disabled" /></td>
-											<td><input class="form-control" id="machineOrderID"
-												disabled="disabled" /></td>
-										</tr>
-										<tr>
-											<td>Kameez</td>
-											<td><select class="form-control" id="machine1"
-												onchange='getEndDate(this)'>
-													<option value='99'> please select machine</option>
-
-											</select></td>
-											<td><input id="input2" class="form-control"
-												disabled="disabled" /></td>
-											<td><input id="input22" class="form-control"
-												disabled="disabled" /></td>
-										</tr>
-										<tr>
-											<td>Duppatta</td>
-											<td><select class="form-control" id="machine2"
-												onchange='getEndDate(this)'>
-													<option value='99'> please select machine</option>
-
-											</select></td>
-											<td><input id="input3" class="form-control"
-												disabled="disabled" /></td>
-											<td><input class="form-control" id="input33"
-												disabled="disabled" /></td>
-										</tr>
-
-									</tbody>
-								</table>
-
-							</div>
-
-							<div id="machineDetail" class="callout callout-success">
-								<h4 id="orderInProgress1"></h4>
-
-								<p id="orderInProgress2"></p>
-							</div>
-						</div>
-
-					</div>
-
 
 					<div class="row">
 						<div class="col-sm-3 pull-right">

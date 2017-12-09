@@ -13,57 +13,53 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.erp.classes.Constants;
 import com.erp.classes.Product;
+import com.erp.classes.ProductDetail;
 import com.erp.services.ProductService;
 
 @Controller
 public class ProductController {
-	
-	
+
 	@Autowired
 	private ProductService service;
-	
-	
-	
-	 @GetMapping(value = "/NewProduct")
-	    public String NewProduct(Model model) {
-	        model.addAttribute("product", new Product());
-	        return "NewProduct";
-	    }
-	 @PostMapping("/product")
-	    public String AddProduct(@ModelAttribute Product product) {
-		 
-	       System.out.println(product.toString());
-	       save(product);
-	       return "NewProduct";
-	    }
-	
-	 @RequestMapping("/product")
-		public List<Product> getProduct() {
-				
-			return service.findAll();
-		}
-	//@RequestMapping(method=RequestMethod.POST,value="/Product")
-	 
-	public void save(Product product) {
-		service.save(product);
-		
-	}
-	@RequestMapping(method=RequestMethod.PUT,value="/UpdateProduct/{id}")
-	public void update(@RequestBody Product Product,@PathVariable int id) {
-		service.update(id, Product);
-		
-	}
-	@RequestMapping(method=RequestMethod.DELETE,value="/Product/{id}")
-	public void delete(@PathVariable int id) {
-		service.delete(id);
-		
-	}
-	@RequestMapping(method=RequestMethod.GET,value="/Product/{id}")
-	public Product GetProduct(@PathVariable int id) {
-		return service.find(id);
-		
+
+	@GetMapping(value = "/NewProduct")
+	public String NewProduct(Model model) {
+		model.addAttribute("product", new Product());
+		return "NewProduct";
 	}
 
-	
+	@PostMapping("/product")
+	public String saveProduct(@ModelAttribute Product product) {
+		product.setIsFinal(1);
+		save(product);
+		saveChild(product.getProd_ID(), product.getProdType());
+		return "NewProduct";
+	}
+
+	@RequestMapping("/product")
+	public List<Product> getProduct() {
+
+		return service.findAll();
+	}
+
+	public void saveChild(int id, String prodType) {
+		Product shalwar = new Product(Constants.shalwar, id);
+		Product kameez = new Product(Constants.kameez, id);
+		
+		if (prodType.equals("3")) {
+			Product duppatta = new Product(Constants.duppatta, id);
+			save(duppatta);
+		}
+		save(kameez);
+		save(shalwar);
+
+	}
+
+	public void save(Product product) {
+		service.save(product);
+
+	}
+
 }

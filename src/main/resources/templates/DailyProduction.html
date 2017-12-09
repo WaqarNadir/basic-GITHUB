@@ -37,18 +37,17 @@
 
 	}
 	function submitdata() {
-		 $.ajax({
+		$.ajax({
 			url : "DP/save",
 			contentType : "application/json; charset=utf-8",
 			data : JSON.stringify(dataList),
 			type : "POST",
 			success : function(result) {
-				
+
 				$('#modal-success').modal({
 					backdrop : 'static',
 					Show : 'true'
 				});
-
 
 			},
 			error : function(xhr, status, error) {
@@ -56,32 +55,39 @@
 				console.log("ERROR:" + xhr.responseText);
 			}
 		});
-		 
+
 	}
 
 	function getProductDetail() {
-		
-		
+
 		var product = $("#product").val();
 		var operation = $("#departmentOP").val();
 		var data = product.concat('!', operation);
 
-		 if(product == '999') 
-	         return;
-		 
+		if (product == '999')
+			return;
+
 		$.ajax({
 			url : "/getProductDetail",
 			contentType : "application/json; charset=utf-8",
 			data : data,
 			type : "POST",
 			success : function(result) {
-				$('#quantity').val(result[0]);
-				$('#openingStock').val("");
+
+				//$('#openingStock').val("");
+
+				quantity = result[0];
 				initialCloth = result[1];
 				closingStock = result[2];
+				completedQuantity = result[3];
+				remainingQuantity = quantity - completedQuantity;
 
+				$('#quantity').val(quantity);
 				$('#initial').val(initialCloth);
 				$('#openingStock').val(closingStock);
+				$('#remainingQuantity').val(remainingQuantity);
+				$('#completedQuantity').val(completedQuantity);
+
 				/*	while (initialCloth == null || initialCloth == "") {
 						initialCloth = prompt(
 								"Please enter Initial CLoth assigned for this product:",
@@ -279,20 +285,47 @@
 									th:field="${OIP.initialCloth}" disabled="disabled"
 									placeholder="Initial Cloth " />
 							</div>
+
 						</div>
+
+
+
 						<div class="row text-center" id="Section2.row2">
 
 							<div class="col-md-1">
 								<label for="date">Quantity:</label>
 							</div>
 							<div class="col-md-2">
-								<input type="text" th:id="quantity" disabled="disabled" class="form-control" />
+								<input type="text" th:id="quantity" disabled="disabled"
+									class="form-control" />
 							</div>
+
+							<div class="col-md-1">
+								<label for="date">Completed:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" class="form-control" id="completedQuantity"
+									disabled="disabled" />
+							</div>
+
+							<div class="col-md-1">
+								<label for="date">Remaining:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" th:id="remainingQuantity" disabled="disabled"
+									class="form-control" placeholder="Quantity Remaining " />
+							</div>
+							<hr />
+						</div>
+
+						<div class="row text-center" id="Section2.row2">
+							<div class="row">&nbsp;</div>
 							<div class="col-md-1">
 								<label for="textfield7">Opening Stock:</label>
 							</div>
 							<div class="col-md-2">
-								<input type="text" th:id="openingStock" disabled="disabled" class="form-control" />
+								<input type="text" th:id="openingStock" disabled="disabled"
+									class="form-control" />
 							</div>
 							<div class="col-md-1">
 								<label for="date">Daily Production:</label>
@@ -383,7 +416,7 @@
 							<button type="submit" class="btn btn-danger">Cancel</button>
 							<a href="starter.html">
 								<button type="submit" class="btn-lg btn-primary" id="Confirm"
-									data-toggle="modal" >Confirm</button>
+									data-toggle="modal">Confirm</button>
 							</a>
 						</div>
 					</div>

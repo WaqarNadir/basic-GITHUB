@@ -38,6 +38,7 @@ import com.erp.classes.OrderDetailWrapperClass;
 import com.erp.classes.Person;
 import com.erp.classes.Product;
 import com.erp.classes.ProductDetail;
+import com.erp.classes.functions;
 import com.erp.services.DepartmentService;
 import com.erp.services.DeptOperationService;
 import com.erp.services.OperationInProgessService;
@@ -60,16 +61,20 @@ public class OrderController {
 	private OrderDetailService orderDetailService;
 	@Autowired
 	private ProductService ProdService;
-	@Autowired
-	private ProductDetailService prodDetailService;
+	// @Autowired
+	// private ProductDetailService prodDetailService;
 
 	List<Product> productlist;
+	List<Product> subType;
 	List<Person> personList;
 	List<OrderDetail> orderDetailList;
+
 	Product selectedProduct;
 	Order savedOrder;
 	DecimalFormat formatter = new DecimalFormat("00");
-	Constants constant;
+	// Constants constant;
+	functions function;
+	int prodType = 0;
 
 	// ----------------------
 	@Autowired
@@ -81,21 +86,23 @@ public class OrderController {
 
 	List<DeptOperationDetails> operationsList;
 	List<OperationInProgress> OIPList;
-	
-	
-	
+	Date currentDate;
+	Date LastScheduledOrder;
 
 	@GetMapping(value = "/NewOrder")
 	public String NewOrder(Model model, HttpSession session) {
-
+		currentDate = new Date(System.currentTimeMillis());
 		personList = new ArrayList<Person>();
-
+		subType = new ArrayList<Product>();
 		session.setAttribute("orderID", getRefNo());
 		session.setAttribute("lotNo", getLotNo());
+		session.setAttribute("currentDate", function.getCurrentDate());
+
 		session.setAttribute("orderDetails", new OrderDetail(true));
+		// Date currentDate = new Date(System.currentTimeMillis());
 
 		model.addAttribute("orderDetail", new OrderDetail());
-		model.addAttribute("productList", getProductList());
+		model.addAttribute("productList", getProductList(1));
 		model.addAttribute("personList", getPerson());
 
 		return "NewOrder"; // Returns page named mentioned
@@ -109,35 +116,72 @@ public class OrderController {
 			System.out.println(errors.toString());
 		}
 
-		Product product = new Product();
-		Date orderDate = new Date(System.currentTimeMillis());
+		Date orderDate = currentDate;
 		Person person = selectedPerson(Integer.parseInt(data.getPartyName()));
 		savedOrder = new Order();
 		savedOrder.setLotNo(getLotNo());
 		savedOrder.setDate(orderDate);
-		savedOrder.setOrderStatus(constant.open);
+		savedOrder.setOrderStatus(Constants.open);
 		savedOrder.setPerson(person);
 		savedOrder.setRefNo(getRefNo());
 
-		for (int i = 0; i < data.getOrderDetail().size(); i++) {
+		int i = 0;
+		for (OrderDetail wrapper : data.getOrderDetail()) {
+
 			String selectedProduct = data.getProduct().get(i);
-			product = getSelectedProduct(selectedProduct);
+			String[] machine = data.getMachineDetail().get(i).split(",");
+			for (Product product : getSubType(selectedProduct)) {
+				double quantity = 0;
+				quantity = wrapper.getQuantity() / prodType;
+				ProductDetail pD = new ProductDetail(wrapper.getProdDetail().getDesignNo(),
+						wrapper.getProdDetail().getColor(), product);
+				OrderDetail OD = new OrderDetail(wrapper.getConstruction(), pD, quantity, wrapper.getRemarks(),
+						wrapper.getNoOfColors());
 
-			data.getOrderDetail().get(i).getProdDetail().setProduct(product);
+				switch (pD.getProduct().getName()) {
+				case Constants.shalwar: {
+					String[] itemDetail = machine[0].split("~");
+					OD.setMachineID(getSelectedOperation(itemDetail[0]));
+					OD.setExpectedEndDate(functions.getSQLDate(itemDetail[2]));
 
-			data.getOrderDetail().get(i).setOrder(savedOrder);
+					break;
+				}
+				case Constants.kameez: {
+					String[] itemDetail = machine[1].split("~");
+					OD.setMachineID(getSelectedOperation(itemDetail[0]));
+					OD.setExpectedEndDate(functions.getSQLDate(itemDetail[2]));
+					break;
+				}
+				case Constants.duppatta: {
+					String[] itemDetail = machine[2].split("~");
+					OD.setMachineID(getSelectedOperation(itemDetail[0]));
+					OD.setExpectedEndDate(functions.getSQLDate(itemDetail[2]));
+					break;
+				}
+				}
 
-			orderDetailService.save(data.getOrderDetail().get(i));
-			orderDetailList.add(data.getOrderDetail().get(i));
+				OD.getProdDetail().setProduct(product);
+
+				OD.setOrder(savedOrder);
+				save(OD);
+
+			}
+			i++;
 		}
 
 		return "orderDetails";
 
 	}
 
+	private void save(OrderDetail OD) {
+		orderDetailService.save(OD);
+		orderDetailList.add(OD);
+	}
+
 	private void init() {
 		operationsList = new ArrayList<DeptOperationDetails>();
 		OIPList = new ArrayList<OperationInProgress>();
+
 	}
 
 	@GetMapping("orderDetails")
@@ -158,7 +202,6 @@ public class OrderController {
 		for (int i = 0; i < productlist.size(); i++) {
 
 			if (productlist.get(i).getProd_ID().toString().equals(product)) {
-				System.out.println(productlist.get(i).getProdType());
 				result.add(productlist.get(i).getProdType());
 			}
 
@@ -185,22 +228,90 @@ public class OrderController {
 	}
 
 	@PostMapping(value = "getEndDate")
-	public @ResponseBody String[] getEndDate(@RequestBody String machineName) {
-		String[] result = new String[3];
+	public @ResponseBody List<String[]> getEndDate(@RequestBody String data) {
+		String[] input = data.split("@");
+		String machineName = input[0];
+		String[] result = new String[5];
+		List<String[]> resultList = new ArrayList<String[]>();
+
 		for (DeptOperationDetails deptOD : operationsList) {
 			if (deptOD.getName().equalsIgnoreCase(machineName)) {
-				
-				OIPList = OIPservice.findByDeptODAndStatus(deptOD,constant.inProgress);
-				for(OperationInProgress OIP : OIPList){
-					result[0] = OIP.getExpectedEndDate().toString();
-					result[1] = OIP.getOrderDetail().getOrder().getRefNo();
-					return result;
+
+				OIPList = OIPservice.findByDeptODAndStatus(deptOD, Constants.Active);
+				OIPList.sort(Comparator.comparing(OperationInProgress::getExpectedEndDate));
+				if (!OIPList.isEmpty()) {
+
+					for (OperationInProgress OIP : OIPList) {
+						result[0] = OIP.getExpectedEndDate().toString();
+						result[1] = OIP.getOrderDetail().getOrder().getRefNo();
+						result[2] = computeOrderEndDate(deptOD, input[1], OIP.getExpectedEndDate());
+						result[3] = Constants.inProgress;
+						resultList.add(result);
+						System.err.println("ORder Number  : " + result[1] + " ---- Order Date " + result[2]);
+
+						// return resultList;
+					}
+				} else {
+					result[3] = Constants.open;
+					result[2] = computeOrderEndDate(deptOD, input[1], currentDate);
+					resultList.add(result);
+					System.err.println("Is Open " + " ---- Order Date " + result[2]);
 				}
-				
+				resultList.addAll(getScheduledOrder(deptOD));
+				if (LastScheduledOrder != null)
+					result[2] = computeOrderEndDate(deptOD, input[1], LastScheduledOrder);
+
 			}
+
 		}
 
-		return null;
+		return resultList;
+
+	}
+
+	public List<String[]> getScheduledOrder(DeptOperationDetails deptOD) {
+
+		List<String[]> resultList = new ArrayList<String[]>();
+		List<OrderDetail> ODList = orderDetailService.findByMachineID(deptOD.getDeptOD_ID());
+		ODList.sort(Comparator.comparing(OrderDetail::getExpectedEndDate));
+		for (OrderDetail OD : ODList) {
+			String result[] = new String[4];
+			if (OD.getExpectedEndDate() != null)
+				result[0] = OD.getExpectedEndDate().toString();
+			result[1] = OD.getOrder().getRefNo();
+
+			String quantity = OD.getQuantity() + "";
+			// result[2] = computeOrderEndDate(deptOD, quantity, OD.getExpectedEndDate());
+			result[2] = OD.getExpectedEndDate().toString();
+			resultList.add(result);
+			System.err.println("ORder Number  : " + result[1] + "---- Order Date " + result[2]);
+			LastScheduledOrder = OD.getExpectedEndDate();
+		}
+		return resultList;
+	}
+
+	// @PostMapping(value = "getSubType")
+	public List<Product> getSubType(String prod) {
+		// Product product = getSelectedProduct(prod);
+		// List<String> result = new ArrayList<>();
+		//
+		// ProdService.findByParentRef(product.getProd_ID());
+		// for (Product p : subType)
+		// result.add(p.getProd_ID() + "," + p.getName());
+		// return result;
+
+		Product product = getSelectedProduct(prod);
+		prodType = Integer.parseInt(product.getProdType());
+		List<Product> result = new ArrayList<Product>();
+		return ProdService.findByParentRef(product.getProd_ID());
+
+	}
+
+	public String computeOrderEndDate(DeptOperationDetails deptOD, String orderQuantity, Date StartDate) {
+		double baseProduction = deptOD.getBaseProduction();
+		double quantity = Double.parseDouble(orderQuantity);
+		int days = (int) Math.ceil(quantity / baseProduction);
+		return days + "/" + function.addDays(days, StartDate);
 
 	}
 
@@ -214,11 +325,11 @@ public class OrderController {
 
 	public Product getSelectedProduct(String product) {
 		String[] prod = product.split("/");
+		prodType = 0;
 
 		for (int i = 0; i < productlist.size(); i++) {
 
 			if (productlist.get(i).getName().equals(prod[0]) && productlist.get(i).getProdType().equals(prod[1])) {
-
 				return productlist.get(i);
 			}
 		}
@@ -234,6 +345,16 @@ public class OrderController {
 		return null;
 	}
 
+	public Integer getSelectedOperation(String operationName) {
+		for (DeptOperationDetails deptOD : operationsList) {
+			if (deptOD.getName().equals(operationName))
+				return deptOD.getDeptOD_ID();
+
+		}
+		return null;
+
+	}
+
 	public List<Person> getPerson() {
 
 		personList = personService.getAll();
@@ -241,12 +362,12 @@ public class OrderController {
 
 	}
 
-	protected List<Product> getProductList() {
-		productlist = ProdService.findAll();
+	protected List<Product> getProductList(int isFinal) {
+		productlist = ProdService.findFinalProduct(isFinal);
 		return productlist;
 	}
 
-	//order related
+	// order related
 	public String getLotNo() {
 
 		String lotNo = "LN-01" + String.format("%05d", (getOrderID() + 1));
@@ -267,18 +388,12 @@ public class OrderController {
 		orderID = orderService.lastPKValue();
 		return orderID;
 	}
-//OIP related
+
+	// OIP related
 	public void computeEstimateDate() {
-//	OIPList.clear();
-//	OIPList.
-		
-		
+		// OIPList.clear();
+		// OIPList.
+
 	}
-	
-	
-	
-	
-	
-	
-	
+
 }
