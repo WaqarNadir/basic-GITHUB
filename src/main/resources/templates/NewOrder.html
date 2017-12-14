@@ -8,9 +8,19 @@
 function init(){
 		setDefaultValue('#prodType');
 		setDefaultValue('#prodName');
+		$("#Color").hide();
 		
-}
+};
 
+
+function calculateQuantity(){
+	var pcs = $("#Pcs").val();
+	var meter = $("#Meter").val();
+	
+	var quantity = pcs * meter;
+	
+	$('#quantity').val(quantity);
+};
 
 function setDefaultValue(dropdown){
 	  $(dropdown).append(
@@ -18,7 +28,7 @@ function setDefaultValue(dropdown){
 						"Please Select"));
 	  $(dropdown).val(999);
 		
-}
+};
 
 function ItemQuantity(quantity){
 	var prodType = $("#prodType").find(":selected").text();
@@ -314,31 +324,7 @@ function saveMachine(productItem){
 	}
 	
 	};
-
-/* function getSubType(){
-	var product={
-			"name" : $("#prodName").find(":selected").text(),
-			"prodType" :  $("#prodType").find(":selected").text()
-		};
-	var prodType=product.name + "/"+ product.prodType;
-	$.ajax({
-	    type: "POST",
-	    contentType: "application/json; charset=utf-8",
-	    data:prodType,
-	    url: "/getSubType",
-	    success : function(result) {
-	    	$.each(result, function(key, value) {
-	    		var data = value.split(',');
-	    		
-	    	
-	    	}	
-	    	
-        }
-});
-} */
-
-
-		
+	
 	
 }
 
@@ -374,8 +360,8 @@ function saveMachine(productItem){
 						<label for="date">Date:</label>
 					</div>
 					<div class="col-md-4">
-						<input type="date" name="date" th:id="date" th:name="date"
-							required="required" />
+						<input class="form-control" type="date" name="date" th:id="date"
+							th:name="date" />
 					</div>
 				</div>
 				<div class="row">&nbsp;</div>
@@ -408,7 +394,7 @@ function saveMachine(productItem){
 						<div class="box-header text-center">
 							<h3 class="box-title">product Details</h3>
 						</div>
-
+						<hr />
 						<div class="row text-center" id="Section2.row1">
 							<div class="col-md-1">&nbsp;</div>
 							<div class="col-md-1">
@@ -475,14 +461,6 @@ function saveMachine(productItem){
 									<option value='Blue'>Blue</option>
 								</select>
 							</div>
-							<div class="col-md-1">
-								<label for="date">Quantity:</label>
-							</div>
-							<div class="col-md-2">
-								<input type="text" class="form-control"
-									th:field="${orderDetail.Quantity}" th:id="quantity"
-									onchange="ItemQuantity(this.value)" />
-							</div>
 							<!-- 		<div class="col-md-1">
 								<label for="date">UOM:</label>
 							</div>
@@ -503,101 +481,120 @@ function saveMachine(productItem){
 						<div class="content" id="Section4.row1">
 
 							<div class="box" id="DetailBox">
-								<div class="box-header center">
+								<div class="box-header text-center">
 									<h3 class="box-title">Item wise Details</h3>
 								</div>
-
-								<div class="box-header center">
-									<label id="orderExpectedEndDate"></label>
+							</div>
+							<br />
+							<div>
+								<div class="col-md-1">
+									<label for="date">Pcs:</label>
 								</div>
-
-
-								<div class="box-body no-padding">
-									<table class="table table-striped">
-
-										<tbody>
-											<th>Name</th>
-											<th>Machine</th>
-											<th>Machine Availability Date</th>
-											<th>Quantity</th>
-											<th>Expected Completion Date</th>
-											<tr>
-												<td>Shalwar</td>
-												<td><select class="form-control" id="machine1"
-													onchange='getEndDate(this,1)'>
-														<option value='99'> please select machine</option>
-
-												</select></td>
-												<td><input class="form-control" id="OperationEndDate1"
-													disabled="disabled" /></td>
-												<td><input class="form-control" id="itemQuantity1"
-													disabled="disabled" /></td>
-
-												<td><input class="form-control" id="orderEndDate1"
-													disabled="disabled" /></td>
-
-												<td><button type="button" id="SAssign"
-														onclick="saveMachine(1)">Assign</button></td>
-											</tr>
-											<tr>
-												<td>Kameez</td>
-												<td><select class="form-control" id="machine2"
-													onchange='getEndDate(this,2)'>
-														<option value='99'> please select machine</option>
-
-												</select></td>
-												<td><input id="OperationEndDate2" class="form-control"
-													disabled="disabled" /></td>
-												<td><input class="form-control" id="itemQuantity2"
-													disabled="disabled" /></td>
-
-												<td><input id="orderEndDate2" class="form-control"
-													disabled="disabled" /></td>
-												<td><button id="KAssign" type="button"
-														onclick="saveMachine(2)">Assign</button></td>
-											</tr>
-											<tr id="rowDuppatta">
-												<td>Duppatta</td>
-												<td><select class="form-control" id="machine3"
-													onchange='getEndDate(this,3)'>
-														<option value='99'> please select machine</option>
-
-												</select></td>
-												<td><input id="OperationEndDate3" class="form-control"
-													disabled="disabled" /></td>
-												<td><input class="form-control" id="itemQuantity3"
-													disabled="disabled" /></td>
-
-												<td><input class="form-control" id="orderEndDate3"
-													disabled="disabled" /></td>
-												<td><button id="DAssign" type="button"
-														onclick="saveMachine(3)">Assign</button></td>
-											</tr>
-
-										</tbody>
-									</table>
-
+								<div class="col-md-2">
+									<input type="number" class="form-control" th:id="Pcs" />
 								</div>
-								<br />
-								<div id="machineDetail" class="callout callout-success">
-									<h4 id="orderInProgress1"></h4>
-
-									<p id="orderInProgress2"></p>
+								<div class="col-md-1">
+									<label for="date">Meter:</label>
+								</div>
+								<div class="col-md-2">
+									<input type="number" class="form-control" th:id="Meter"
+										onchange="calculateQuantity()" />
+								</div>
+								<div class="col-md-1">
+									<label for="date">Quantity:</label>
+								</div>
+								<div class="col-md-2">
+									<input type="number" class="form-control"
+										th:field="${orderDetail.Quantity}" th:id="quantity"
+										onchange="ItemQuantity(this.value)" />
 								</div>
 							</div>
+							<label id="orderExpectedEndDate"></label>
 
+							<div class="box-body no-padding">
+								<table class="table table-striped">
 
-							<div class="row text-center" id="Section2.row3">
+									<tbody>
+										<th>Name</th>
+										<th>Machine</th>
+										<th>Machine Availability Date</th>
+										<th>Quantity</th>
+										<th>Expected Completion Date</th>
+										<tr>
+											<td>Shalwar</td>
+											<td><select class="form-control" id="machine1"
+												onchange='getEndDate(this,1)'>
+													<option value='99'> please select machine</option>
 
-								<br /> <input type="button" class="btn-lg btn-success"
-									value="Add" id="Add" onclick="add()" />
+											</select></td>
+											<td><input class="form-control" id="OperationEndDate1"
+												disabled="disabled" /></td>
+											<td><input class="form-control" id="itemQuantity1"
+												disabled="disabled" /></td>
+
+											<td><input class="form-control" id="orderEndDate1"
+												disabled="disabled" /></td>
+
+											<td><button type="button" id="SAssign"
+													onclick="saveMachine(1)">Assign</button></td>
+										</tr>
+										<tr>
+											<td>Kameez</td>
+											<td><select class="form-control" id="machine2"
+												onchange='getEndDate(this,2)'>
+													<option value='99'> please select machine</option>
+
+											</select></td>
+											<td><input id="OperationEndDate2" class="form-control"
+												disabled="disabled" /></td>
+											<td><input class="form-control" id="itemQuantity2"
+												disabled="disabled" /></td>
+
+											<td><input id="orderEndDate2" class="form-control"
+												disabled="disabled" /></td>
+											<td><button id="KAssign" type="button"
+													onclick="saveMachine(2)">Assign</button></td>
+										</tr>
+										<tr id="rowDuppatta">
+											<td>Duppatta</td>
+											<td><select class="form-control" id="machine3"
+												onchange='getEndDate(this,3)'>
+													<option value='99'> please select machine</option>
+
+											</select></td>
+											<td><input id="OperationEndDate3" class="form-control"
+												disabled="disabled" /></td>
+											<td><input class="form-control" id="itemQuantity3"
+												disabled="disabled" /></td>
+
+											<td><input class="form-control" id="orderEndDate3"
+												disabled="disabled" /></td>
+											<td><button id="DAssign" type="button"
+													onclick="saveMachine(3)">Assign</button></td>
+										</tr>
+
+									</tbody>
+								</table>
 
 							</div>
+							<br />
+							<div id="machineDetail" class="callout callout-success">
+								<h4 id="orderInProgress1"></h4>
 
+								<p id="orderInProgress2"></p>
+							</div>
 						</div>
 
 
+						<div class="row text-center" id="Section2.row3">
+
+							<br /> <input type="button" class="btn-lg btn-success"
+								value="Add" id="Add" onclick="add()" />
+
+						</div>
+
 					</div>
+
 
 					<div class="box">
 						<div class="box-header center">
@@ -632,7 +629,6 @@ function saveMachine(productItem){
 							</a>
 						</div>
 					</div>
-
 				</div>
 			</form>
 		</div>

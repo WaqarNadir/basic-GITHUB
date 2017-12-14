@@ -13,7 +13,8 @@
 			<label class="control-label col-md-2" for="nam">Product Name:</label>
 		</div>
 		<div class="col-md-offset-1 col-md-8">
-			<select th:name="product" th:id="product" class="form-control">
+			<select th:name="product" th:field="${OIP.orderDetail}"
+				th:id="product" class="form-control">
 				<option value="0">Please Select</option>
 				<option th:each="item,RowNum : ${orderDetailList}"
 					th:value="${item.ordDetail_ID}"

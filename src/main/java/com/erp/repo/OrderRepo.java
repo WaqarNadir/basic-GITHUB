@@ -11,6 +11,9 @@ import java.util.List;
 @Repository
 public interface OrderRepo extends JpaRepository<Order, Integer> {
 	Integer LastPKValue();
+
 	List<Order> findByOrderStatus(String orderstatus);
+
+	List<Order> findByorderStatusNotLike(String orderstatus);
 
 }

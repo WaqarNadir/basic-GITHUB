@@ -99,36 +99,38 @@
 						</div>
 					</div>
 				</div>
-<!-- 				<div class="content" id="OIP"> -->
-<!-- 					<div class="box"> -->
-<!-- 						<div class="box-header"> -->
-<!-- 							<h3 class="box-title">Department Details</h3> -->
-<!-- 						</div> -->
-<!-- 						/.box-header -->
-<!-- 						<div class="box-body no-padding"> -->
-<!-- 							<table th:id="operationDetailTable" class="table table-striped"> -->
-<!-- 								<tbody> -->
-<!-- 									<tr> -->
-<!-- 										<td>No</td> -->
-<!-- 										<td>Operation Name</td> -->
-<!-- 										<td>Department</td> -->
-<!-- 									</tr> -->
+				<div class="content" id="OIP">
+					<div class="box">
+						<div class="box-header">
+							<h3 class="box-title">Department Details</h3>
+						</div>
 
-<!-- 									<tr th:each="order,iterStat : ${operationList}" -->
-<!-- 										th:if="dept.Dept_ID == order.dept.Dept_ID "> -->
-<!-- 										<td th:text="${iterStat.index}">...</td> -->
-<!-- 										<td th:text="${ order.name}">...</td> -->
-<!-- 										<td th:text="${order.dept.name}">...</td> -->
-<!-- 										<td>Estimate Date</td> -->
-<!-- 										<td><input type="text" placeholder="Enter Estiamted Date" /></td> -->
-<!-- 									</tr> -->
-<!-- 								</tbody> -->
-<!-- 							</table> -->
-<!-- 						</div> -->
-<!-- 						/.box-body -->
-<!-- 					</div> -->
+						<div class="box-body no-padding">
+							<table th:id="operationDetailTable" class="table table-striped">
+								<tbody>
+									<tr>
+										<th>No</th>
+										<th>Operation Name</th>
+										<th>Department</th>
+										<th>Status</th>
+										<th>Expected End Date</th>
+									</tr>
 
-<!-- 				</div> -->
+									<tr th:each="OIP,iterStat : ${OIPList}"
+										th:if="${OIP.status} != 'Closed' ">
+										<td th:text="${iterStat.index}">...</td>
+										<td th:text="${OIP.deptOD.name}">...</td>
+										<td th:text="${OIP.deptOD.dept.name}">...</td>
+										<td th:text="${OIP.status}">...</td>
+										<td th:text="${OIP.expectedEndDate}">...</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+					</div>
+
+				</div>
 
 				<div class="content" id="completedProduct">
 					<div class="box">
@@ -137,7 +139,26 @@
 						</div>
 						<!-- /.box-header -->
 						<div class="box-body no-padding">
-							<p>No product is in complete status</p>
+							<table th:id="operationDetailTable" class="table table-striped">
+								<tbody>
+									<tr>
+										<th>No</th>
+										<th>Operation Name</th>
+										<th>Department</th>
+										<th>Status</th>
+										<th>Expected End Date</th>
+									</tr>
+
+									<tr th:each="OIP,iterStat : ${OIPList}"
+										th:if="${OIP.status} == 'Closed' ">
+										<td th:text="${iterStat.index}">...</td>
+										<td th:text="${OIP.deptOD.name}">...</td>
+										<td th:text="${OIP.deptOD.dept.name}">...</td>
+										<td th:text="${OIP.status}">...</td>
+										<td th:text="${OIP.expectedEndDate}">...</td>
+									</tr>
+								</tbody>
+							</table>
 						</div>
 						<!-- /.box-body -->
 					</div>

@@ -9,6 +9,15 @@
 
 	}
 	function add() {
+		if (!checkMandatory()) {
+			$('#errorMsg').show();
+			$('#errorMsg').text("Please Add Date first");
+			return;
+		} else {
+			$('#errorMsg').hide();
+
+		}
+
 		counter = counter + 1;
 		var operation = $('#departmentOP').find(":selected").val();
 		var product = $('#product').find(":selected").val();
@@ -169,6 +178,16 @@
 
 	}
 
+	function checkMandatory() {
+		var date = $('#date').val();
+		if (date == "") {
+			return false;
+		} else {
+			return true;
+		}
+
+	}
+
 	function init() {
 		counter = 0;
 		dataList = [];
@@ -212,7 +231,7 @@
 						<label for="textfield7">Order No:</label>
 					</div>
 					<div class="col-md-3">
-						<select th:name="orderID" th:id="orderID"
+						<select class="form-control" th:name="orderID" th:id="orderID"
 							onchange="getProductList()">
 							<option th:each="order,RowNum : ${orderList}"
 								th:value="${order.Order_ID}" th:text="${order.order_ID}">Order ID</option>
@@ -234,7 +253,7 @@
 					</div>
 					<div class="col-md-3">
 						<select th:name="department" th:id="department"
-							onchange="getOperations()">
+							class="form-control" onchange="getOperations()">
 							<option th:each="operation,RowNum : ${deptList}"
 								th:value="${operation.Dept_ID}" th:text="${operation.name}">operation</option>
 						</select>
@@ -248,7 +267,9 @@
 					</div>
 				</div>
 				<hr />
-
+				<div>
+					<p id="errorMsg"></p>
+				</div>
 				<div class="content" id="Section2.row1">
 					<div class="box">
 						<div class="box-header text-center">
@@ -262,7 +283,7 @@
 							</div>
 							<div class="col-md-2">
 								<select th:name="departmentOP" th:id="departmentOP"
-									th:field="${OIP.deptOD.sequenceNo}">
+									class="form-control" th:field="${OIP.deptOD.sequenceNo}">
 									<option value="0">Please Select</option>
 								</select>
 							</div>
@@ -271,7 +292,7 @@
 									Name</label>
 							</div>
 							<div class="col-md-2">
-								<select th:name="product" th:id="product"
+								<select th:name="product" th:id="product" class="form-control"
 									th:field="${OIP.orderDetail.remarks}"
 									onchange="getProductDetail()">
 									<option value="99">Please Select</option>

@@ -123,7 +123,7 @@ public class DPController {
 			java.sql.Date endDate = function.addDays(remaining, null);
 			oIP.setExpectedEndDate(endDate);
 			oIP.setStatus(Constants.inProgress);
-			
+
 			oIP.getOrderDetail().setExpectedEndDate(endDate);
 			oIP.getOrderDetail().getOrder().setOrderStatus(Constants.inProgress);
 			oIP.getOrderDetail().getOrder().setEstimatedDate(endDate);
@@ -153,7 +153,7 @@ public class DPController {
 			if (OIP != null && DeptOD.getDeptOD_ID() == OIP.getDeptOD().getDeptOD_ID()) {
 				result[1] = OIP.getInitialCloth();
 				result[2] = service.getClosingStock(OIP);
-				result[3]= getQuantityProduced(OIP);
+				result[3] = getQuantityProduced(OIP);
 				break;
 			}
 		}
@@ -206,7 +206,7 @@ public class DPController {
 	}
 
 	public List<Order> getOrderList() {
-		orderList = orderSrvice.findByStatus("open");
+		orderList = orderSrvice.findByStatusNotLike(Constants.closed);
 		return orderList;
 	}
 

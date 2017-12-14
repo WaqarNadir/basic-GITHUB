@@ -247,7 +247,7 @@ public class OrderController {
 						result[2] = computeOrderEndDate(deptOD, input[1], OIP.getExpectedEndDate());
 						result[3] = Constants.inProgress;
 						resultList.add(result);
-						System.err.println("ORder Number  : " + result[1] + " ---- Order Date " + result[2]);
+						System.err.println("Order Number  : " + result[1] + " ---- Order Date " + result[2]);
 
 						// return resultList;
 					}

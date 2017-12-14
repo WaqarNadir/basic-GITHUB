@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.erp.classes.Constants;
 import com.erp.classes.DailyProduction;
 import com.erp.classes.Department;
 import com.erp.classes.DeptOperationDetails;
@@ -51,14 +52,16 @@ public class OIPController {
 	List<Department> DeptList;
 
 	// int operationListCounter = 0;
+	OperationInProgress OIP;
 
 	@GetMapping("NewOIP")
 	public String home(Model model) {
+		OIP = new OperationInProgress();
 		selectedODList = new ArrayList<OrderDetail>();
 		// ODListCounter = 0;
 		// operationListCounter = 0;
 		selectedOperationsList = new ArrayList<DeptOperationDetails>();
-		model.addAttribute("OIP", new OperationInProgress());
+		model.addAttribute("OIP", OIP);
 		model.addAttribute("orderList", getOrderList());
 		model.addAttribute("deptList", getDepartment());
 
@@ -73,10 +76,10 @@ public class OIPController {
 	@PostMapping("OIP/save")
 	public String save(@ModelAttribute("OIP") OperationInProgress OIP) {
 		if (OIP != null) {
-			OrderDetail OD = getFromSelectedOrderList(Integer.parseInt(OIP.getOrderDetail().getRemarks()));
+			OrderDetail OD = getFromSelectedOrderList(OIP.getOrderDetail().getOrdDetail_ID());
 
 			OIP.setOrderDetail(OD);
-			OIP.setDeptOD(getFromSelectedOperationList(Integer.parseInt(OIP.getDeptOD().getName())));
+			OIP.setDeptOD(getFromSelectedOperationList(OIP.getDeptOD().getDeptOD_ID()));
 			OIP.setExpectedEndDate(OD.getExpectedEndDate());
 
 			service.save(OIP);
@@ -118,44 +121,46 @@ public class OIPController {
 		return operations;
 	}
 
+	// @PostMapping("OIP/productList")
+	// public @ResponseBody List<String> getProductList(@RequestBody int orderID) {
+	// List<String> result = new ArrayList<String>();
+	//
+	// Order order = getOrder(orderID);
+	//
+	// List<OrderDetail> orderDetail = new ArrayList<OrderDetail>();
+	// orderDetail = orderDetailService.findByOrder(order);
+	//
+	// for (OrderDetail OD : orderDetail) {
+	// if (OD != null && OD.getProdDetail() != null &&
+	// OD.getProdDetail().getProduct() != null) {
+	//
+	// result.add(OD.getProdDetail().getProduct().getName() + " | " +
+	// OD.getConstruction()
+	// // + " | " + OD.get(i).getProdDetail().getDesignNo() + " | "
+	// + " | " + OD.getProdDetail().getColor());
+	//
+	// selectedODList.add(OD);
+	// // ODListCounter++;
+	//
+	// } // will pass lotno , index to get value later and
+	//
+	// }
+	//
+	// return result;
+	// // must return string
+	// }
+
 	@PostMapping("OIP/productList")
-	public @ResponseBody List<String> getProductList(@RequestBody int orderID) {
-		List<String> result = new ArrayList<String>();
+	public ModelAndView getProductList(@RequestBody Integer ID) {
+		ModelAndView view = new ModelAndView("NewOIPFragments  :: ProductDetail");
 
-		Order order = getOrder(orderID);
-
-		List<OrderDetail> orderDetail = new ArrayList<OrderDetail>();
-		orderDetail = orderDetailService.findByOrder(order);
-
-		for (OrderDetail OD : orderDetail) {
-			if (OD != null && OD.getProdDetail() != null && OD.getProdDetail().getProduct() != null) {
-
-				result.add(OD.getProdDetail().getProduct().getName() + " | " + OD.getConstruction()
-				// + " | " + OD.get(i).getProdDetail().getDesignNo() + " | "
-						+ " | " + OD.getProdDetail().getColor());
-
-				selectedODList.add(OD);
-				// ODListCounter++;
-
-			} // will pass lotno , index to get value later and
-
-		}
-
-		return result;
-		// must return string
-	}
-
-	@PostMapping("/example-url")
-	public ModelAndView example(@RequestBody Integer ID) {
-
-		ModelAndView view = new ModelAndView("OIPFragments  :: ProductDetail");
 		Order order = getOrder(ID);
-
 		List<OrderDetail> orderDetailList = new ArrayList<OrderDetail>();
 		orderDetailList = orderDetailService.findByOrder(order);
 		selectedODList.addAll(orderDetailList);
-		view.addObject("orderDetailList", orderDetailList);
 
+		view.addObject("orderDetailList", orderDetailList);
+		view.addObject("OIP", OIP);
 		return view;
 	}
 
@@ -180,7 +185,7 @@ public class OIPController {
 	}
 
 	public List<Order> getOrderList() {
-		orderList = orderSrvice.findByStatus("open");
+		orderList = orderSrvice.findByStatusNotLike(Constants.closed);
 		return orderList;
 	}
 

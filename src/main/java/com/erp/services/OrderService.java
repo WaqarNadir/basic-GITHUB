@@ -18,13 +18,11 @@ public class OrderService {
 
 	public void save(Order Order) {
 		repo.save(Order);
-		
 
 	}
-	
+
 	public void saveAndFlush(Order Order) {
 		repo.saveAndFlush(Order);
-		
 
 	}
 
@@ -34,8 +32,8 @@ public class OrderService {
 	}
 
 	public int lastPKValue() {
-		Integer value =repo.LastPKValue();
-		if(value==null)
+		Integer value = repo.LastPKValue();
+		if (value == null)
 			return 0;
 		return value;
 
@@ -49,7 +47,6 @@ public class OrderService {
 	public Order find(int id) {
 		System.out.println(repo.findOne(id));
 		return repo.findOne(id);
-		
 
 	}
 
@@ -59,9 +56,15 @@ public class OrderService {
 		return orderList;
 
 	}
+
 	public List<Order> findByStatus(String orderStatus) {
 		return repo.findByOrderStatus(orderStatus);
-		 
+
 	}
-	
+
+	public List<Order> findByStatusNotLike(String orderStatus) {
+		return repo.findByorderStatusNotLike((orderStatus));
+
+	}
+
 }
