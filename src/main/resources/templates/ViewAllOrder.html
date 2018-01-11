@@ -3,6 +3,34 @@
 
 <div th:replace="template:: head"></div>
 
+<script th:inline="javascript">
+	function showDiv() {
+		$("#detailColumn").show();
+	}
+
+	function swapOrder(value) {
+		var swapWith = $("#swapInput").val();
+
+		$.ajax({
+			type : "POST",
+			data : {
+				ID : value,
+				swapWith : swapWith
+			},
+			url : "/viewOrder/swap",
+			success : function(val) {
+				var firstOrder = "#seq" + value;
+				var secondOrder = "#seq" + val;
+				var seq = $(firstOrder).html();
+				$(secondOrder).html(seq);
+				$(firstOrder).html(swapWith);
+
+			}
+		});
+
+	}
+</script>
+
 <body class="hold-transition skin-blue sidebar-mini">
 
 	<div th:replace="template:: wrapper"></div>
@@ -30,14 +58,20 @@
 							<td th:text="${order.person.Fname+' ' +order.person.Lname}">...</td>
 							<td th:text="${order.orderStatus}">...</td>
 							<td th:text="${order.estimatedDate}">...</td>
-							<td th:text="${iterStat.index + 1 }">...</td>
-							<td>
-								<!-- 								<button th:value="${order.order_ID}" --> <!-- 									th:class="${iterStat.odd}? 'btn-primary' : 'btn-danger'">Move -->
-								<!-- 									Up</button> --> <a
+							<td th:id="${'seq'+order.order_ID}"
+								th:text="${order.sequenceNo }">...</td>
+							<td><a
 								th:href="@{'/viewOrder/orderDetail/'+${order.order_ID}}"><button
 										type="button" class="btn btn-primary">View Details</button> </a>
 
-							</td>
+								<button onclick="showDiv()" th:value="${order.order_ID}"
+									th:class="${iterStat.odd}? 'btn-primary' : 'btn-danger'">Swap
+								</button></td>
+							<td id="detailColumn" hidden="true"><input
+								placeholder="Enter Sequence No. to swap with" type="number"
+								th:id="swapInput" />
+								<button th:value="${order.order_ID}"
+									onclick="swapOrder(this.value)">Save</button></td>
 						</tr>
 					</tbody>
 

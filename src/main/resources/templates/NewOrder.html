@@ -12,6 +12,38 @@ function init(){
 		
 };
 
+function disableRow(value){
+	
+	switch(value){
+	case 1:{
+		result =  $('#SelectShalwar').prop("checked");
+			if(result)
+			$("#SAssign").hide();
+			else
+				$("#SAssign").show();
+			
+		break;
+	};
+	case 2:{
+		result =  $('#SelectKameez').prop("checked");
+		if(result)
+		$("#KAssign").hide();
+		else
+			$("#KAssign").show();
+		
+			break;
+		};
+	case 3:{
+		result =  $('#SelectDuppatta').prop("checked");
+		if(result)
+		$("#DAssign").hide();
+		else
+			$("#DAssign").show();
+		break;
+	};
+		
+	}
+};
 
 function calculateQuantity(){
 	var pcs = $("#Pcs").val();
@@ -170,9 +202,9 @@ function onProductChange() {
 		    	                    .text(value));
 		    		 
 		    		 if(value ==2)
-		    			 $('#rowDuppatta').hide();
+		    			 $('#DuppattaRow').hide();
 		    		 else
-		    			 $('#rowDuppatta').show();
+		    			 $('#DuppattaRow').show();
 		    	});
 	          
 	        }
@@ -410,6 +442,7 @@ function saveMachine(productItem){
 										th:value="${product.prod_ID}" th:text="${product.Name}">product Name</option>
 								</select>
 							</div>
+							
 							<div class="col-md-1">
 								<label class="control-label col-md-2" for="Pt">product
 									Type</label>
@@ -419,6 +452,7 @@ function saveMachine(productItem){
 									<option value="0">Please Select </option>
 								</select>
 							</div>
+							
 							<div class="col-md-1">
 								<label for="date">Design No:</label>
 							</div>
@@ -486,7 +520,7 @@ function saveMachine(productItem){
 								</div>
 							</div>
 							<br />
-							<div>
+							<div class="row text-center" id="Section2.row1">
 								<div class="col-md-1">
 									<label for="date">Pcs:</label>
 								</div>
@@ -516,12 +550,14 @@ function saveMachine(productItem){
 
 									<tbody>
 										<th>Name</th>
+										<th></th>
 										<th>Machine</th>
 										<th>Machine Availability Date</th>
 										<th>Quantity</th>
 										<th>Expected Completion Date</th>
-										<tr>
+										<tr id="ShalwarRow" onchange="disableRow(1)">
 											<td>Shalwar</td>
+											<td><input id="SelectShalwar" type="checkbox" /></td>
 											<td><select class="form-control" id="machine1"
 												onchange='getEndDate(this,1)'>
 													<option value='99'> please select machine</option>
@@ -535,11 +571,13 @@ function saveMachine(productItem){
 											<td><input class="form-control" id="orderEndDate1"
 												disabled="disabled" /></td>
 
-											<td><button type="button" id="SAssign"
-													onclick="saveMachine(1)">Assign</button></td>
+											<td><button class="btn btn-primary" type="button"
+													id="SAssign" onclick="saveMachine(1)">Assign</button></td>
 										</tr>
-										<tr>
+										<tr id="KameezRow">
 											<td>Kameez</td>
+											<td><input id="SelectKameez" type="checkbox"
+												onchange="disableRow(2)" /></td>
 											<td><select class="form-control" id="machine2"
 												onchange='getEndDate(this,2)'>
 													<option value='99'> please select machine</option>
@@ -552,11 +590,13 @@ function saveMachine(productItem){
 
 											<td><input id="orderEndDate2" class="form-control"
 												disabled="disabled" /></td>
-											<td><button id="KAssign" type="button"
-													onclick="saveMachine(2)">Assign</button></td>
+											<td><button class="btn btn-primary" id="KAssign"
+													type="button" onclick="saveMachine(2)">Assign</button></td>
 										</tr>
-										<tr id="rowDuppatta">
+										<tr id="DuppattaRow">
 											<td>Duppatta</td>
+											<td><input id="SelectDuppatta" type="checkbox"
+												onchange="disableRow(3)" /></td>
 											<td><select class="form-control" id="machine3"
 												onchange='getEndDate(this,3)'>
 													<option value='99'> please select machine</option>
@@ -569,8 +609,8 @@ function saveMachine(productItem){
 
 											<td><input class="form-control" id="orderEndDate3"
 												disabled="disabled" /></td>
-											<td><button id="DAssign" type="button"
-													onclick="saveMachine(3)">Assign</button></td>
+											<td><button class="btn btn-primary" id="DAssign"
+													type="button" onclick="saveMachine(3)">Assign</button></td>
 										</tr>
 
 									</tbody>

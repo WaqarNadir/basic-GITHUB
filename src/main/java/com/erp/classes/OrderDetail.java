@@ -39,15 +39,59 @@ public class OrderDetail implements Serializable {
 
 	@Column(name = "Quantity", nullable = true)
 	private double Quantity;
-	
+
 	@Column(name = "Machine_ID", nullable = true)
-	private int machineID;
-	
-	public int getMachineID() {
+	private Integer machineID;
+
+	@Column(name = "Remarks", nullable = true)
+	private String Remarks;
+	@Column(name = "ExpectedEndDate")
+	private Date expectedEndDate;
+
+	@Column(name = "ExpectedStartDate")
+	private Date expectedStartDate;
+
+	@Column(name = "NoOfColors")
+	private int noOfColors;
+
+	@Column(name = "Pcs")
+	private Integer Pcs;
+
+	@Column(name = "Split")
+	private Double Split;
+
+	public Double getSplit() {
+		return Split;
+	}
+
+	public void setSplit(Double split) {
+		Split = split;
+	}
+
+	public Integer getPcs() {
+		return Pcs;
+	}
+
+	public void setPcs(Integer pcs) {
+		Pcs = pcs;
+	}
+
+	public Double getMeter() {
+		return Meter;
+	}
+
+	public void setMeter(Double meter) {
+		Meter = meter;
+	}
+
+	@Column(name = "Meter")
+	private Double Meter;
+
+	public Integer getMachineID() {
 		return machineID;
 	}
 
-	public void setMachineID(int machineID) {
+	public void setMachineID(Integer machineID) {
 		this.machineID = machineID;
 	}
 
@@ -66,17 +110,6 @@ public class OrderDetail implements Serializable {
 	public void setNoOfColors(int noOfColors) {
 		this.noOfColors = noOfColors;
 	}
-
-	@Column(name = "Remarks", nullable = true)
-	private String Remarks;
-	@Column(name = "ExpectedEndDate")
-	private Date expectedEndDate;
-	
-	@Column(name = "ExpectedStartDate")
-	private Date expectedStartDate;
-	
-	@Column(name = "NoOfColors")
-	private int noOfColors;
 
 	// -------------------------- getter ------------------------------------
 
@@ -122,7 +155,6 @@ public class OrderDetail implements Serializable {
 	public OrderDetail() {
 		// TODO Auto-generated constructor stub
 	}
-	
 
 	// -------------------------- setter ------------------------------------
 	public void setExpectedEndDate(Date expectedEndDate) {
@@ -157,9 +189,7 @@ public class OrderDetail implements Serializable {
 		Remarks = remarks;
 	}
 
-	public OrderDetail(String construction, ProductDetail prodDetail,
-			double quantity, String remarks, 
-			int noOfColors) {
+	public OrderDetail(String construction, ProductDetail prodDetail, double quantity, String remarks, int noOfColors) {
 		super();
 		Construction = construction;
 		this.prodDetail = prodDetail;
@@ -167,5 +197,14 @@ public class OrderDetail implements Serializable {
 		Remarks = remarks;
 		this.noOfColors = noOfColors;
 	}
-	
+
+	public void copyValue(OrderDetail OD) {
+		this.setConstruction(OD.getConstruction());
+		this.setNoOfColors(OD.getNoOfColors());
+		this.setPcs(OD.getPcs());
+		this.setMeter(OD.getMeter());
+		this.setProdDetail(new ProductDetail(OD.getProdDetail()));
+
+	}
+
 }

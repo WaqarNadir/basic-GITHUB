@@ -11,56 +11,46 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.TableGenerator;
 
-@Entity(name="Productdetail")
+@Entity(name = "Productdetail")
 public class ProductDetail implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
-	@Column(nullable=true , name = "Color")
+
+	@Column(nullable = true, name = "Color")
 	private String Color;
 
-	@Column(nullable=true , name = "Designno")
+	@Column(nullable = true, name = "Designno")
 	private String DesignNo;
 
-	@Column(nullable=true , name = "Imgpath")
+	@Column(nullable = true, name = "Imgpath")
 	private String ImgPath;
 
-	@Column(nullable=true , name = "IsScrap")
+	@Column(nullable = true, name = "IsScrap")
 	private Integer IsScrap;
 
-
 	@ManyToOne
-	@JoinColumn(name="Prod_ID" ,nullable=true)
+	@JoinColumn(name = "Prod_ID", nullable = true)
 	private Product product;
-	
-		
+
 	@Id
-	@TableGenerator(
-	        name="ProdDetailID", 
-	        table="ID_GEN", 
-	        pkColumnName="GEN_KEY", 
-	        valueColumnName="GEN_VALUE", 
-	        pkColumnValue="ProdDetailID", 
-	        allocationSize=1)
-	    @GeneratedValue(strategy=GenerationType.TABLE, generator="ProdDetailID")
+	@TableGenerator(name = "ProdDetailID", table = "ID_GEN", pkColumnName = "GEN_KEY", valueColumnName = "GEN_VALUE", pkColumnValue = "ProdDetailID", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "ProdDetailID")
 	@Column(name = "Proddetail_ID")
 	private Integer ProdDetail_ID;
 
-	@Column(nullable=true , name = "Remarks")
+	@Column(nullable = true, name = "Remarks")
 	private String Remarks;
-	
-	public ProductDetail() {
-		
-	}
-	
 
-	public ProductDetail(String designNo, String color,
-			Product product ) {
+	public ProductDetail() {
+
+	}
+
+	public ProductDetail(String designNo, String color, Product product) {
 		super();
 		DesignNo = designNo;
 		Color = color;
-		this.product = product ;
-		
+		this.product = product;
+
 	}
 
 	public String getColor() {
@@ -78,7 +68,6 @@ public class ProductDetail implements Serializable {
 	public Integer getIsScrap() {
 		return IsScrap;
 	}
-
 
 	public Product getProduct() {
 		return product;
@@ -120,5 +109,13 @@ public class ProductDetail implements Serializable {
 		Remarks = remarks;
 	}
 
+	public ProductDetail(ProductDetail PD) {
+		this.setColor(PD.getColor());
+		this.setDesignNo(PD.getDesignNo());
+		this.setRemarks(PD.getRemarks());
+		this.setImgPath(PD.getImgPath());
+		this.setIsScrap(PD.getIsScrap());
+
+	}
 
 }

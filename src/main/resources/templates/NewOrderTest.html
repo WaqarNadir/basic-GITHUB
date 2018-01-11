@@ -1,0 +1,628 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:replace="template:: head"></div>
+
+<script th:inline="javascript">
+	/*<![CDATA[*/
+	$(document).ready(function() {
+		$('#machineDetail').hide();
+	});
+
+	function setDefaultValue(dropdown) {
+		$(dropdown).append(
+				$("<option></option>").attr("value", "999").text(
+						"Please Select"));
+		$(dropdown).val(999);
+	};
+
+	function removeDiv() {
+		$('#machineDetail').hide();
+		//$(opEndDate).val("");
+		$(itemEndDate).val("");
+		$('#orderInProgress1').text("");
+		$('#orderInProgress2').text("");
+
+	}
+
+	function calculateQuantity() {
+		var pcs = $("#Pcs").val();
+		var meter = $("#Meter").val();
+		var quantity = pcs * meter;
+		$('#quantity').val(quantity);
+		clearItemSplit();
+	};
+
+	function ItemQuantity(index, split) {
+		var shalwar = $("#ShalwarSplit").val();
+		var kameez = $("#KameezSplit").val();
+		var duppatta = $("#DuppattaSplit").val();
+		var meter = $("#Meter").val();
+		var pcs = $("#Pcs").val();
+		var prodType = $("#prodType").text();
+		var totalSplit = +shalwar + +kameez + +duppatta;
+
+		if (index == 3 || (prodType == "2" && index == 2)) {
+			if (totalSplit != meter) {
+				alert("Total split should be equal to " + meter + " meter.");
+				return;
+			}
+		}
+
+		if (split != 0 || split != "")
+			itemQuantity = pcs * split;
+
+		switch (index) {
+		case 1: {
+
+			$("#itemQuantity1").val(itemQuantity);
+			break;
+		}
+			;
+		case 2: {
+			$("#itemQuantity2").val(itemQuantity);
+			break;
+		}
+			;
+		case 3: {
+			$("#itemQuantity3").val(itemQuantity);
+
+			break;
+		}
+		}
+
+	};
+
+	function clearItemSplit() {
+		$("#ShalwarSplit").val("");
+		$("#KameezSplit").val("");
+		$("#DuppattaSplit").val("");
+	};
+
+	function onProductChange() {
+		var prodName = $('#prodName').val();
+		$('#prodType').empty();
+		clearItemSplit();
+		if (prodName == '999')
+			return;
+
+		$.ajax({
+			type : "POST",
+			data : prodName,
+			contentType : "application/json; charset=utf-8",
+			url : "/getProdType?",
+			success : function(prodType) {
+				//setDefaultValue('#prodType');
+
+				$.each(prodType, function(key, value) {
+					$('#prodType').append(
+							$("<option></option>").attr("value", key).text(
+									value));
+					if (value == 2)
+						$('#DuppattaRow').hide();
+					else
+						$('#DuppattaRow').show();
+				});
+
+			}
+		});
+	};
+
+	function getMachine() {
+		var colors = $('#noOfColor').val();
+		if (colors == '999')
+			return;
+		$('#machine1').empty();
+		$('#machine2').empty();
+		$('#machine3').empty();
+		$.ajax({
+			type : "POST",
+			contentType : "application/json; charset=utf-8",
+			data : colors,
+			url : "/getMachine",
+			success : function(prodType) {
+				var counter = 0;
+				setDefaultValue('#machine1');
+				setDefaultValue('#machine2');
+				setDefaultValue('#machine3');
+
+				$.each(prodType, function(key, data) {
+					var value = data.split(",");
+					for (a = 1; a != 4; a++) {
+						var machine = "#machine" + a;
+						$(machine).append(
+								$("<option></option>").attr("value", value[1])
+										.text(value[0]));
+					}
+				});
+			}
+		});
+	};
+
+	function getEndDate(machine, val) {
+		var machineName = $(machine).find("option:selected").text();
+		if (machineName == '999')
+			return;
+
+		var data = machineName.split("| ");
+		var itemQuantityField = '#itemQuantity' + val;
+		var quantity = $(itemQuantityField).val();
+		data[1] = data[1] + "@" + quantity;
+
+		var opEndDate = "#OperationEndDate" + val;
+		var itemEndDate = "#orderEndDate" + val;
+		var lastOrderDate = null;
+		$
+				.ajax({
+					type : "POST",
+					contentType : "application/json; charset=utf-8",
+					data : data[1],
+					url : "/getEndDate",
+					success : function(output) {
+						if (output == "" || output == null) { // No result found
+							removeDiv();
+
+							return;
+						}
+
+						$
+								.each(
+										output,
+										function(key, result) {
+											inProgress = "In Progress";
+											open = "Open";
+											scheduled = "Scheduled";
+
+											if (result[3] == inProgress
+													|| result[3] == open) {
+
+												computedDate = result[2]
+														.split('/');
+												DaysToComplete = computedDate[0];
+												computedEndDate = computedDate[1];
+											}
+											if (result[3] == scheduled) {
+
+												displayScheduled = true;
+												msg = " Estimated Date if starts after Scheduled Order <strong>"
+														+ computedEndDate
+														+ "</strong><br/>";
+
+											}
+
+											if (result[3] == open) { // No result found
+
+												$(opEndDate).val(result[0]);
+												$(itemEndDate).val(
+														computedEndDate);
+
+												$('#machineDetail').show();
+												$('#orderInProgress1')
+														.text(
+																"Need "
+																		+ DaysToComplete
+																		+ " Days To Complete.");
+												$('#orderInProgress2').text("");
+												var msg = " Estimated Date if order start today <strong>"
+														+ computedEndDate
+														+ "</strong><br/>";
+
+												$('#orderInProgress2').append(
+														'<font color="yellow" size="3">  Machine is Free.</font> <br/>'
+																+ msg);
+												return;
+											}
+
+											if (result[3] == inProgress) {
+
+												$('#machineDetail').show();
+												$(opEndDate).val(result[0]);
+												$(itemEndDate).val(
+														computedEndDate);
+
+												$('#orderInProgress1')
+														.text(
+																"Need "
+																		+ DaysToComplete
+																		+ " Days To Complete.");
+												$('#orderInProgress2').text("");
+												$('#orderInProgress2')
+														.append(
+																machineName
+																		+ " - <strong>  Currently busy in :    - </strong> "
+																		+ result[1]
+																		+ "<br/>");
+												displayScheduled = true;
+											} else {
+												if (displayScheduled) {
+													$('#orderInProgress2')
+															.append(
+																	"<h3> Scheduled Orders are :</h3> <br/>");
+													displayScheduled = false;
+												}
+												var scheduleOrder = "<strong>  "
+														+ result[1]
+														+ "</strong> "
+														+ " expected Order End date is : "
+														+ "<strong> "
+														+ result[2]
+														+ "</strong> "
+														+ "<br/>";
+												$('#orderInProgress2').append(
+														scheduleOrder);
+												lastOrderDate = result[2];
+											}
+
+										});
+						if (lastOrderDate != null) {
+							var d = new Date(lastOrderDate);
+							d.setDate(d.getDate() + parseInt(DaysToComplete));
+							$(itemEndDate).val(formatDate(d));
+						}
+					}
+				});
+
+	};
+	function formatDate(value) {
+
+		return value.getFullYear() + "-" + value.getMonth() + 1 + "-"
+				+ ("0" + value.getDate()).slice(-2);
+
+	}
+	// 	function disableRow(value) {
+
+	//		switch (value) {
+	//		case 1: {
+	//			result = $('#SelectShalwar').prop("checked");
+	//			if (result)
+	//				$("#SAssign").hide();
+	//			else
+	//				$("#SAssign").show();
+
+	//			break;
+	//		}
+	//			;
+	//		case 2: {
+	//			result = $('#SelectKameez').prop("checked");
+	//			if (result)
+	//				$("#KAssign").hide();
+	//			else
+	//				$("#KAssign").show();
+
+	//			break;
+	//		}
+	//			;
+	//		case 3: {
+	//			result = $('#SelectDuppatta').prop("checked");
+	//			if (result)
+	//				$("#DAssign").hide();
+	//			else
+	//				$("#DAssign").show();
+	//			break;
+	//		}
+	//			;
+
+	//		}
+	//	};
+	/*]]>*/
+</script>
+
+
+
+<body class="hold-transition skin-blue sidebar-mini">
+	<div th:replace="template:: wrapper"></div>
+
+	<div class="content-wrapper">
+
+		<div class="box box-danger">
+			<div class="box-header with-border text-center">
+				<h2 class="box-title">Manufacturing order</h2>
+			</div>
+			<hr />
+			<form id="addProduct" action="Order/save" method="post"
+				th:object="${wrapper}">
+
+				<div class="row" id="Section1.row1">
+					<div class="col-md-1">&nbsp;</div>
+					<div class="col-md-1">
+						<label for="textfield7">Order Ref No:</label>
+					</div>
+					<div class="col-md-3">
+						<input type="text" class="form-control" readonly="readonly"
+							th:field="*{order.RefNo}" placeholder="order Number"
+							th:id="orderID" />
+					</div>
+					<div class="col-md-1">
+						<label for="date">Date:</label>
+					</div>
+					<div class="col-md-4">
+						<input class="form-control" type="date" name="date" th:id="date"
+							th:name="date" th:field="*{order.date}" />
+					</div>
+				</div>
+				<div class="row">&nbsp;</div>
+
+				<div class="row" id="Section1.row2">
+					<div class="col-md-1">&nbsp;</div>
+					<div class="col-md-1">
+						<label for="textfield7">Party Name:</label>
+					</div>
+					<div class="col-md-3">
+						<select th:field="*{order.person}" th:class="form-control"
+							th:id="partyName">
+							<option th:value="0">Please Select </option>
+							<option th:each="person ,iterStat : ${personList}"
+								th:value="${person.PersonID}"
+								th:text="${person.Fname +' ' +person.Lname}">						
+						</option>
+						</select>
+					</div>
+					<div class="col-md-1">
+						<label for="date">Lot No:</label>
+					</div>
+					<div class="col-md-3">
+						<input type="text" class="form-control" th:id="lotNo"
+							readonly="readonly" th:field="*{order.LotNo}" />
+					</div>
+				</div>
+				<hr />
+
+				<div class="content" id="Section2.row1">
+					<div class="box">
+						<div class="box-header text-center">
+							<h3 class="box-title">product Details</h3>
+						</div>
+						<hr />
+						<div class="row text-center" id="Section2.row1">
+							<div class="col-md-1">&nbsp;</div>
+							<div class="col-md-1">
+								<label for="textfield7">product:</label>
+							</div>
+							<div class="col-md-2">
+
+
+								<select th:field="*{orderDetailList[0].prodDetail.product}"
+									th:name="Product" th:id="prodName" class="form-control"
+									onchange="onProductChange()">
+									<option th:value="0">Please Select </option>
+									<option th:each="product,RowNum : ${productList}"
+										th:value="${product.prod_ID}" th:text="${product.Name}">product Name</option>
+								</select>
+							</div>
+
+							<div class="col-md-1">
+								<label class="control-label col-md-2" for="Pt">product
+									Type</label>
+							</div>
+							<div class="col-md-2">
+								<select class="form-control" th:id="prodType">
+									<option value="0">Please Select </option>
+								</select>
+							</div>
+
+							<div class="col-md-1">
+								<label for="date">Design No:</label>
+							</div>
+							<div class="col-md-2">
+								<input th:field="*{orderDetailList[0].prodDetail.DesignNo}"
+									type="text" class="form-control" th:id="DesignNo" />
+							</div>
+						</div>
+						<div class="row text-center" id="Section2.row2">
+
+							<div class="col-md-1">
+								<label for="date">Construction:</label>
+							</div>
+							<div class="col-md-2">
+								<input type="text" class="form-control"
+									th:field="*{orderDetailList[0].Construction}" />
+							</div>
+							<div class="col-md-1">
+								<label for="textfield7">Color:</label>
+							</div>
+							<div class="col-md-2">
+								<select class="form-control" th:id="noOfColor"
+									th:field="*{orderDetailList[0].noOfColors}" th:name="noOfColor"
+									onchange="getMachine()">
+									<option value='1'>1</option>
+									<option value='2'>2</option>
+									<option value="3">3</option>
+									<option value='4'>4</option>
+									<option value='5'>5</option>
+									<option value='6'>6</option>
+									<option value='7'>7</option>
+									<option value='8'>8</option>
+								</select>
+							</div>
+
+							<div class="col-md-2">
+								<select class="form-control" th:id="Color" th:name="Color"
+									th:field="*{orderDetailList[0].prodDetail.Color}">
+									<option value='Red'>Red</option>
+									<option value='Green'>Green</option>
+									<option value='Blue'>Blue</option>
+								</select>
+							</div>
+							<!-- 		<div class="col-md-1">
+									<label for="date">UOM:</label>
+							</div>
+							<div class="col-md-2">
+								<select class="form-control" th:id="UOM" th:name="UOM"
+									th:field="*{prodDetail.product.UOM}">
+									<option value="Pcs">Pcs</option>
+									<option value="Meter">Meter</option>
+									<option value="other">Other</option>
+								</select>
+							</div>
+
+							-->
+
+						</div>
+						<!-- 					</form> -->
+						<hr />
+						<div class="content" id="Section4.row1">
+
+							<div class="box" id="DetailBox">
+								<div class="box-header text-center">
+									<h3 class="box-title">Item wise Details</h3>
+								</div>
+							</div>
+							<br />
+							<div class="row text-center" id="ItemDetails">
+								<div class="col-md-1">
+									<label for="date">Pcs:</label>
+								</div>
+								<div class="col-md-2">
+									<input type="number" class="form-control" th:id="Pcs"
+										th:field="*{orderDetailList[0].Pcs}" />
+								</div>
+								<div class="col-md-1">
+									<label for="date">Meter:</label>
+								</div>
+								<div class="col-md-2">
+									<input type="number" class="form-control" th:id="Meter"
+										th:field="*{orderDetailList[0].Meter}"
+										onchange="calculateQuantity()" />
+								</div>
+								<div class="col-md-1">
+									<label for="date">Quantity:</label>
+								</div>
+								<div class="col-md-2">
+									<input type="number" class="form-control" th:id="quantity"
+										th:field="*{orderDetailList[0].Quantity}" />
+								</div>
+							</div>
+
+
+							<label id="orderExpectedEndDate"></label>
+
+							<div class="box-body no-padding">
+								<table class="table table-striped">
+
+									<tbody>
+										<th>Name</th>
+
+										<th>Split</th>
+										<th>Machine</th>
+										<th>Machine Availability Date</th>
+										<th>Quantity</th>
+										<th>Expected Completion Date</th>
+
+										<tr id="ShalwarRow">
+											<td>Shalwar</td>
+
+											<!--<td><input onchange="disableRow(1)" id="SelectShalwar" type="checkbox" /></td> -->
+
+											<td><input type="text" class="form-control"
+												th:id="ShalwarSplit" th:field="*{orderDetailList[0].Split}"
+												onchange="ItemQuantity(1,this.value)" /></td>
+
+											<td><select class="form-control" id="machine1"
+												th:field="*{orderDetailList[0].machineID}"
+												onfocusout="removeDiv()" onchange='getEndDate(this,1)'>
+													<option value='99'> please select machine</option>
+
+											</select></td>
+											<td><input type="date" class="form-control"
+												id="OperationEndDate1"
+												th:field="*{orderDetailList[0].expectedStartDate}"
+												readonly="readonly" /></td>
+											<td><input class="form-control" id="itemQuantity1"
+												th:field="*{orderDetailList[0].Quantity}" /></td>
+
+											<td><input class="form-control" id="orderEndDate1"
+												readonly="readonly" type="date"
+												th:field="*{orderDetailList[0].expectedEndDate}" /></td>
+
+										</tr>
+
+										<tr id="KameezRow">
+											<td>Kameez</td>
+											<!--<td><input id="SelectKameez" type="checkbox" -->
+											<!--onchange="disableRow(2)" value="true" /></td> -->
+
+											<td><input type="text" class="form-control"
+												th:field="*{orderDetailList[1].Split}" th:id="KameezSplit"
+												onchange="ItemQuantity(2,this.value)" /></td>
+
+											<td><select class="form-control" id="machine2"
+												th:field="*{orderDetailList[1].machineID}"
+												onfocusout="removeDiv()" onchange='getEndDate(this,2)'>
+													<option value='99'> please select machine</option>
+											</select></td>
+
+											<td><input id="OperationEndDate2" class="form-control"
+												readonly="readonly"
+												th:field="*{orderDetailList[1].expectedStartDate}"
+												type="date" /></td>
+
+											<td><input class="form-control" id="itemQuantity2"
+												th:field="*{orderDetailList[1].Quantity}" /></td>
+
+											<td><input id="orderEndDate2" class="form-control"
+												readonly="readonly" type="date"
+												th:field="*{orderDetailList[1].expectedEndDate}" /></td>
+										</tr>
+
+										<tr id="DuppattaRow">
+											<td>Duppatta</td>
+
+											<!--<td><input id="SelectDuppatta" type="checkbox" -->
+											<!--onchange="disableRow(3)" value="true" /></td> -->
+
+											<td><input type="text" value="true"
+												th:field="*{orderDetailList[2].Split}" class="form-control"
+												th:id="DuppattaSplit" onchange="ItemQuantity(3,this.value)" /></td>
+
+											<td><select class="form-control" id="machine3"
+												th:field="*{orderDetailList[2].machineID}"
+												onfocusout="removeDiv()" onchange='getEndDate(this,3)'>
+													<option value='99'> please select machine</option>
+											</select></td>
+
+											<td><input id="OperationEndDate3" class="form-control"
+												th:field="*{orderDetailList[2].expectedStartDate}"
+												type="date" readonly="readonly" /></td>
+
+											<td><input class="form-control" id="itemQuantity3"
+												th:field="*{orderDetailList[2].Quantity}" /></td>
+
+											<td><input class="form-control" id="orderEndDate3"
+												th:field="*{orderDetailList[2].expectedEndDate}"
+												readonly="readonly" type="date" /></td>
+										</tr>
+
+									</tbody>
+								</table>
+
+							</div>
+							<br />
+							<div id="machineDetail" class="callout callout-success">
+								<h4 id="orderInProgress1"></h4>
+
+								<p id="orderInProgress2"></p>
+							</div>
+						</div>
+
+					</div>
+
+					<div class="row">
+						<div class="col-sm-3 pull-right">
+							<button type="submit" class="btn btn-danger">Cancel</button>
+							<a href="starter.html">
+								<button type="submit" class="btn-lg btn-primary" id="Confirm"
+									data-backdrop="static" data-toggle="modal"
+									data-target="#modal-success">Confirm</button>
+							</a>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<!-- /.content-wrapper -->
+	<div th:replace="template:: modal"></div>
+
+	<div th:replace="template:: footer"></div>
+</body>
+</html>

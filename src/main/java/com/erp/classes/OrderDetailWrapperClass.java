@@ -4,13 +4,21 @@ import java.util.List;
 
 public class OrderDetailWrapperClass {
 
-	List<OrderDetail> orderDetail;
+	List<OrderDetail> orderDetailList;
 	List<String> product;
 	List<String> machineDetail;
-
+	Order order;
 	String Date;
 
 	String partyName;
+
+	public Order getOrder() {
+		return order;
+	}
+
+	public void setOrder(Order order) {
+		this.order = order;
+	}
 
 	public List<String> getMachineDetail() {
 		return machineDetail;
@@ -20,12 +28,12 @@ public class OrderDetailWrapperClass {
 		this.machineDetail = machineDetail;
 	}
 
-	public List<OrderDetail> getOrderDetail() {
-		return orderDetail;
+	public List<OrderDetail> getOrderDetailList() {
+		return orderDetailList;
 	}
 
-	public void setOrderDetail(List<OrderDetail> orderDetail) {
-		this.orderDetail = orderDetail;
+	public void setOrderDetailList(List<OrderDetail> orderDetail) {
+		this.orderDetailList = orderDetail;
 	}
 
 	public List<String> getProduct() {
